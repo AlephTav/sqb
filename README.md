@@ -1,2 +1,2 @@
-# sqb
-SQL Builder on Golang
+# sqlbuilder-go
+SqlBuilder for go projects
