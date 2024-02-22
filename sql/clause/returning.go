@@ -19,11 +19,13 @@ func NewReturningClause[T sqb.Statement[T]](self T) *ReturningClause[T] {
 //   - Returning(column any, alias any)
 func (r *ReturningClause[T]) Returning(column any, args ...any) T {
 	r.exp.Append(column, args...)
+	r.self.Dirty()
 	return r.self
 }
 
 func (r *ReturningClause[T]) CleanReturning() T {
 	r.exp.Clean()
+	r.self.Dirty()
 	return r.self
 }
 

@@ -51,6 +51,7 @@ func (l *LockingClause[T]) ForLock(strength string, table any, args ...string) T
 	if table != nil {
 		l.lockOf.Append(table)
 	}
+	l.self.Dirty()
 	return l.self
 }
 
@@ -58,6 +59,7 @@ func (l *LockingClause[T]) CleanLock() T {
 	l.lockStrength = ""
 	l.lockOption = ""
 	l.lockOf.Clean()
+	l.self.Dirty()
 	return l.self
 }
 

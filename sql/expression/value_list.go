@@ -54,15 +54,22 @@ func (e ValueListExpression) mapToString(exp sqb.SliceMap) string {
 }
 
 func (e ValueListExpression) sliceToString(exp []any) string {
+	if len(exp) == 0 {
+		return ""
+	}
 	var separator string
 	var result strings.Builder
+	if _, ok := exp[0].([]any); ok {
+		for _, value := range exp {
+			result.WriteString(separator)
+			result.WriteString(e.valueListToString(value))
+			separator = ", "
+		}
+		return result.String()
+	}
 	for _, value := range exp {
 		result.WriteString(separator)
-		if values, ok := value.([]any); ok {
-			result.WriteString(e.valueListToString(values))
-		} else {
-			result.WriteString(e.valueToString(value))
-		}
+		result.WriteString(e.valueToString(value))
 		separator = ", "
 	}
 	return "(" + result.String() + ")"

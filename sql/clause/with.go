@@ -19,6 +19,7 @@ func NewWithClause[T sqb.Statement[T]](self T) *WithClause[T] {
 // With(query any, alias any)
 func (w *WithClause[T]) With(query any, args ...any) T {
 	w.exp.Append(false, query, args...)
+	w.self.Dirty()
 	return w.self
 }
 
@@ -27,11 +28,13 @@ func (w *WithClause[T]) With(query any, args ...any) T {
 // WithRecursive(query any, alias any)
 func (w *WithClause[T]) WithRecursive(query any, args ...any) T {
 	w.exp.Append(true, query, args...)
+	w.self.Dirty()
 	return w.self
 }
 
 func (w *WithClause[T]) CleanWith() T {
 	w.exp.Clean()
+	w.self.Dirty()
 	return w.self
 }
 

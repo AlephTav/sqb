@@ -374,4 +374,529 @@ func TestSelectStmt_JoinOfDifferentTypes(t *testing.T) {
 	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
+func TestSelectStmt_JoinValues(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("t1").
+		RightJoin(NewValuesStmt(nil).
+			Values([]any{
+				[]any{"a1", 1},
+				[]any{"a2", 2},
+				[]any{"a3", 3},
+			}),
+			"t2 (name, id)",
+			"t1.id = t2.id",
+		)
+
+	sqb.CheckSql(
+		t,
+		"SELECT * FROM t1 RIGHT JOIN (VALUES (:p1, :p2), (:p3, :p4), (:p5, :p6)) t2 (name, id) ON t1.id = t2.id",
+		st.String(),
+	)
+	sqb.CheckParams(
+		t,
+		map[string]any{
+			"p1": "a1",
+			"p2": 1,
+			"p3": "a2",
+			"p4": 2,
+			"p5": "a3",
+			"p6": 3,
+		},
+		st.Params(),
+	)
+}
+
+//endregion
+
+//region WHERE
+
+func TestSelectStmt_WhereAsString(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("c1 = c2")
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE c1 = c2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereAsRawExpression(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where(sql.NewExp("c1 = c2"))
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE c1 = c2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereBinaryOpWithScalar(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("col", "=", 1)
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE col = :p1", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1}, st.Params())
+}
+
+func TestSelectStmt_WhereBinaryOpWithNull(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("col", "=", nil)
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE col = NULL", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereBinaryOpWithQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Where("t1.col", "=", NewSelectStmt(nil).From("t2").Select("COUNT(*)"))
+
+	sqb.CheckSql(t, "SELECT * FROM t1 WHERE t1.col = (SELECT COUNT(*) FROM t2)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereBinaryOpWithValueList(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("col", "IN", []any{1, 2, 3})
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE col IN (:p1, :p2, :p3)", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2, "p3": 3}, st.Params())
+}
+
+func TestSelectStmt_WhereBinaryOpBetween(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("col", "BETWEEN", []any{1, 2})
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE col BETWEEN :p1 AND :p2", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2}, st.Params())
+}
+
+func TestSelectStmt_WhereBinaryOpWithRawValue(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("c1", "=", sql.NewExp("c2"))
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE c1 = c2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereUnaryOpWithRawExpression(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("NOT", sql.NewExp("col"))
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE NOT col", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereUnaryOpWithQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Where("NOT", NewSelectStmt(nil).From("t2").Select("COUNT(*)"))
+
+	sqb.CheckSql(t, "SELECT * FROM t1 WHERE NOT (SELECT COUNT(*) FROM t2)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereWithQueryAsOperand(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("t1").
+		Where(NewSelectStmt(nil).From("t2").Select("COUNT(*)"), ">", 5)
+
+	sqb.CheckSql(t, "SELECT * FROM t1 WHERE (SELECT COUNT(*) FROM t2) > :p1", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 5}, st.Params())
+}
+
+func TestSelectStmt_WhereWithQueriesAsOperandAndValue(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Where(
+			NewSelectStmt(nil).From("t2").Select("COUNT(*)"),
+			"<>",
+			NewSelectStmt(nil).From("t3").Select("COUNT(*)"),
+		)
+
+	sqb.CheckSql(t, "SELECT * FROM t1 WHERE (SELECT COUNT(*) FROM t2) <> (SELECT COUNT(*) FROM t3)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereAsConditionList(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where([]any{"c1 = c2", "c3 <> c4"})
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE c1 = c2 AND c3 <> c4", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WhereAsConditionMap(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where(sqb.Map("c1", 1, "c2", 2))
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE c1 = :p1 AND c2 = :p2", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2}, st.Params())
+}
+
+func TestSelectStmt_WhereWithNestedConditions(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Where("c1 IS NULL").
+		AndWhere(sql.EmptyCondExp().
+			OrWhere("c2", "=", 1).
+			OrWhere("c3", "<", 2),
+		)
+
+	sqb.CheckSql(t, "SELECT * FROM tb WHERE c1 IS NULL AND (c2 = :p1 OR c3 < :p2)", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2}, st.Params())
+}
+
+//endregion
+
+//region HAVING
+
+func TestSelectStmt_HavingAsString(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("c1 = c2")
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING c1 = c2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingAsRawExpression(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having(sql.NewExp("c1 = c2"))
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING c1 = c2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingBinaryOpWithScalar(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("col", "=", 1)
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING col = :p1", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1}, st.Params())
+}
+
+func TestSelectStmt_HavingBinaryOpWithNull(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("col", "=", nil)
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING col = NULL", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingBinaryOpWithQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Having("t1.col", "=", NewSelectStmt(nil).From("t2").Select("COUNT(*)"))
+
+	sqb.CheckSql(t, "SELECT * FROM t1 HAVING t1.col = (SELECT COUNT(*) FROM t2)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingBinaryOpWithValueList(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("col", "IN", []any{1, 2, 3})
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING col IN (:p1, :p2, :p3)", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2, "p3": 3}, st.Params())
+}
+
+func TestSelectStmt_HavingBinaryOpBetween(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("col", "BETWEEN", []any{1, 2})
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING col BETWEEN :p1 AND :p2", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2}, st.Params())
+}
+
+func TestSelectStmt_HavingBinaryOpWithRawValue(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("c1", "=", sql.NewExp("c2"))
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING c1 = c2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingUnaryOpWithRawExpression(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("NOT", sql.NewExp("col"))
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING NOT col", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingUnaryOpWithQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Having("NOT", NewSelectStmt(nil).From("t2").Select("COUNT(*)"))
+
+	sqb.CheckSql(t, "SELECT * FROM t1 HAVING NOT (SELECT COUNT(*) FROM t2)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingWithQueryAsOperand(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("t1").
+		Having(NewSelectStmt(nil).From("t2").Select("COUNT(*)"), ">", 5)
+
+	sqb.CheckSql(t, "SELECT * FROM t1 HAVING (SELECT COUNT(*) FROM t2) > :p1", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 5}, st.Params())
+}
+
+func TestSelectStmt_HavingWithQueriesAsOperandAndValue(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Having(
+			NewSelectStmt(nil).From("t2").Select("COUNT(*)"),
+			"<>",
+			NewSelectStmt(nil).From("t3").Select("COUNT(*)"),
+		)
+
+	sqb.CheckSql(t, "SELECT * FROM t1 HAVING (SELECT COUNT(*) FROM t2) <> (SELECT COUNT(*) FROM t3)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingAsConditionList(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having([]any{"c1 = c2", "c3 <> c4"})
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING c1 = c2 AND c3 <> c4", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_HavingAsConditionMap(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having(sqb.Map("c1", 1, "c2", 2))
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING c1 = :p1 AND c2 = :p2", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2}, st.Params())
+}
+
+func TestSelectStmt_HavingWithNestedConditions(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		From("tb").
+		Having("c1 IS NULL").
+		AndHaving(sql.EmptyCondExp().
+			OrWhere("c2", "=", 1).
+			OrWhere("c3", "<", 2),
+		)
+
+	sqb.CheckSql(t, "SELECT * FROM tb HAVING c1 IS NULL AND (c2 = :p1 OR c3 < :p2)", st.String())
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 2}, st.Params())
+}
+
+//endregion
+
+//region GROUP BY
+
+func TestSelectStmt_GroupByColumn(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		GroupBy("col")
+
+	sqb.CheckSql(t, "SELECT * FROM tb GROUP BY col", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_GroupByColumnWithDirection(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		GroupBy("col", "DESC")
+
+	sqb.CheckSql(t, "SELECT * FROM tb GROUP BY col DESC", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_GroupByColumnList(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		GroupBy([]any{"c1", "c2", "c3"})
+
+	sqb.CheckSql(t, "SELECT * FROM tb GROUP BY c1, c2, c3", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_GroupByColumnsWithDirections(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		GroupBy(sqb.Map("c1", "ASC", "c2", "DESC", "c3", ""))
+
+	sqb.CheckSql(t, "SELECT * FROM tb GROUP BY c1 ASC, c2 DESC, c3", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_GroupByAppendColumns(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		GroupBy("c1").
+		GroupBy("c2", "ASC").
+		GroupBy("c3", "DESC")
+
+	sqb.CheckSql(t, "SELECT * FROM tb GROUP BY c1, c2 ASC, c3 DESC", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_GroupByQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		GroupBy(NewSelectStmt(nil).From("t2").Select("t2.id"), "DESC")
+
+	sqb.CheckSql(t, "SELECT * FROM t1 GROUP BY (SELECT t2.id FROM t2) DESC", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_GroupByMixedSources(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		GroupBy("c1 ASC").
+		GroupBy(sql.NewExp("c2 DESC")).
+		GroupBy([]any{"c3", "c4"}).
+		GroupBy(sqb.Map("c5", "DESC")).
+		GroupBy(NewSelectStmt(nil).From("t2").Select("t2.id"))
+
+	sqb.CheckSql(
+		t,
+		"SELECT * FROM t1 GROUP BY c1 ASC, c2 DESC, c3, c4, c5 DESC, (SELECT t2.id FROM t2)",
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+//endregion
+
+//region ORDER BY
+
+func TestSelectStmt_OrderByColumn(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		OrderBy("col")
+
+	sqb.CheckSql(t, "SELECT * FROM tb ORDER BY col", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_OrderByColumnWithDirection(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		OrderBy("col", "DESC")
+
+	sqb.CheckSql(t, "SELECT * FROM tb ORDER BY col DESC", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_OrderByColumnList(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		OrderBy([]any{"c1", "c2", "c3"})
+
+	sqb.CheckSql(t, "SELECT * FROM tb ORDER BY c1, c2, c3", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_OrderByColumnsWithDirections(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		OrderBy(sqb.Map("c1", "ASC", "c2", "DESC", "c3", ""))
+
+	sqb.CheckSql(t, "SELECT * FROM tb ORDER BY c1 ASC, c2 DESC, c3", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_OrderByAppendColumns(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		OrderBy("c1").
+		OrderBy("c2", "ASC").
+		OrderBy("c3", "DESC")
+
+	sqb.CheckSql(t, "SELECT * FROM tb ORDER BY c1, c2 ASC, c3 DESC", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_OrderByQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		OrderBy(NewSelectStmt(nil).From("t2").Select("t2.id"), "DESC")
+
+	sqb.CheckSql(t, "SELECT * FROM t1 ORDER BY (SELECT t2.id FROM t2) DESC", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_OrderByMixedSources(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		OrderBy("c1 ASC").
+		OrderBy(sql.NewExp("c2 DESC")).
+		OrderBy([]any{"c3", "c4"}).
+		OrderBy(sqb.Map("c5", "DESC")).
+		OrderBy(NewSelectStmt(nil).From("t2").Select("t2.id"))
+
+	sqb.CheckSql(
+		t,
+		"SELECT * FROM t1 ORDER BY c1 ASC, c2 DESC, c3, c4, c5 DESC, (SELECT t2.id FROM t2)",
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+//endregion
+
+//region Limit & Offset
+
+func TestSelectStmt_Limit(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Limit(10)
+
+	sqb.CheckSql(t, "SELECT * FROM tb LIMIT 10", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_Offset(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Offset(12)
+
+	sqb.CheckSql(t, "SELECT * FROM tb OFFSET 12", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_LimitAndOffset(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("tb").
+		Offset(10).
+		Limit(5)
+
+	sqb.CheckSql(t, "SELECT * FROM tb LIMIT 5 OFFSET 10", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
 //endregion

@@ -19,11 +19,13 @@ func NewGroupClause[T sqb.Statement[T]](self T) *GroupClause[T] {
 //   - GroupBy(column any, order any)
 func (g *GroupClause[T]) GroupBy(column any, args ...any) T {
 	g.exp.Append(column, args...)
+	g.self.Dirty()
 	return g.self
 }
 
 func (g *GroupClause[T]) CleanGroup() T {
 	g.exp.Clean()
+	g.self.Dirty()
 	return g.self
 }
 

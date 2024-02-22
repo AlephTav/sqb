@@ -12,5 +12,5 @@ func NextParameterName() string {
 }
 
 func ResetParameterIndex() {
-	parameterIndex = -1
+	parameterIndex = 0
 }

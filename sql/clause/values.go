@@ -7,20 +7,22 @@ import (
 
 type ValuesClause[T sqb.Statement[T]] struct {
 	self T
-	exp  sql.ColumnListExpression
+	exp  sql.ValueListExpression
 }
 
 func NewValuesClause[T sqb.Statement[T]](self T) *ValuesClause[T] {
-	return &ValuesClause[T]{self, sql.EmptyColumnListExp()}
+	return &ValuesClause[T]{self, sql.EmptyValueListExp()}
 }
 
 func (v *ValuesClause[T]) Values(values any) T {
 	v.exp.Append(values)
+	v.self.Dirty()
 	return v.self
 }
 
-func (v *ValueListClause[T]) CleanValues() T {
+func (v *ValuesClause[T]) CleanValues() T {
 	v.exp.Clean()
+	v.self.Dirty()
 	return v.self
 }
 

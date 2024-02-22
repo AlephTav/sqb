@@ -19,11 +19,13 @@ func NewFromClause[T sqb.Statement[T]](self T) *FromClause[T] {
 //   - From(table any, alias any)
 func (f *FromClause[T]) From(table any, args ...any) T {
 	f.exp.Append(table, args...)
+	f.self.Dirty()
 	return f.self
 }
 
 func (f *FromClause[T]) CleanFrom() T {
 	f.exp.Clean()
+	f.self.Dirty()
 	return f.self
 }
 

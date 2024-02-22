@@ -16,11 +16,13 @@ func NewColumnsClause[T sqb.Statement[T]](self T) *ColumnsClause[T] {
 
 func (c *ColumnsClause[T]) Columns(columns any) T {
 	c.exp.Append(columns)
+	c.self.Dirty()
 	return c.self
 }
 
 func (c *ColumnsClause[T]) CleanColumns() T {
 	c.exp.Clean()
+	c.self.Dirty()
 	return c.self
 }
 

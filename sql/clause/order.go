@@ -19,11 +19,13 @@ func NewOrderClause[T sqb.Statement[T]](self T) *OrderClause[T] {
 //   - OrderBy(column any, order any)
 func (o *OrderClause[T]) OrderBy(column any, args ...any) T {
 	o.exp.Append(column, args...)
+	o.self.Dirty()
 	return o.self
 }
 
 func (o *OrderClause[T]) CleanOrder() T {
 	o.exp.Clean()
+	o.self.Dirty()
 	return o.self
 }
 

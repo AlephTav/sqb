@@ -22,6 +22,7 @@ func NewWhereClause[T sqb.Statement[T]](self T) *WhereClause[T] {
 //   - AndWhere(operator string, operand any)
 func (w *WhereClause[T]) AndWhere(args ...any) T {
 	w.exp.AndWhere(args...)
+	w.self.Dirty()
 	return w.self
 }
 
@@ -33,6 +34,7 @@ func (w *WhereClause[T]) AndWhere(args ...any) T {
 //   - OrWhere(operator string, operand any)
 func (w *WhereClause[T]) OrWhere(args ...any) T {
 	w.exp.OrWhere(args...)
+	w.self.Dirty()
 	return w.self
 }
 
@@ -44,11 +46,13 @@ func (w *WhereClause[T]) OrWhere(args ...any) T {
 //   - Where(operator string, operand any)
 func (w *WhereClause[T]) Where(args ...any) T {
 	w.exp.Where(args...)
+	w.self.Dirty()
 	return w.self
 }
 
 func (w *WhereClause[T]) CleanWhere() T {
 	w.exp.Clean()
+	w.self.Dirty()
 	return w.self
 }
 

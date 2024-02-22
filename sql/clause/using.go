@@ -19,11 +19,13 @@ func NewUsingClause[T sqb.Statement[T]](self T) *UsingClause[T] {
 //   - Using(table any, alias any)
 func (u *UsingClause[T]) Using(table any, args ...any) T {
 	u.exp.Append(table, args...)
+	u.self.Dirty()
 	return u.self
 }
 
 func (u *UsingClause[T]) CleanUsing() T {
 	u.exp.Clean()
+	u.self.Dirty()
 	return u.self
 }
 

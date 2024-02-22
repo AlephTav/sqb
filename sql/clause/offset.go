@@ -16,11 +16,13 @@ func NewOffsetClause[T sqb.Statement[T]](self T) *OffsetClause[T] {
 
 func (o *OffsetClause[T]) Offset(offset int) T {
 	o.offset = offset
+	o.self.Dirty()
 	return o.self
 }
 
 func (o *OffsetClause[T]) CleanOffset() T {
 	o.offset = -1
+	o.self.Dirty()
 	return o.self
 }
 

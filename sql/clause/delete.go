@@ -19,10 +19,20 @@ func NewDeleteClause[T sqb.Statement[T]](self T) *DeleteClause[T] {
 //   - From(table any, alias any)
 func (d *DeleteClause[T]) From(table any, args ...any) T {
 	d.exp.Append(table, args...)
+	d.self.Dirty()
 	return d.self
 }
 
 func (d *DeleteClause[T]) CleanDelete() T {
 	d.exp.Clean()
+	d.self.Dirty()
 	return d.self
+}
+
+func (d *DeleteClause[T]) CopyDelete() *DeleteClause[T] {
+	return &DeleteClause[T]{d.self, d.exp.Copy()}
+}
+
+func (d *DeleteClause[T]) BuildDelete() (T, sql.DirectListExpression) {
+	return d.self, d.exp
 }

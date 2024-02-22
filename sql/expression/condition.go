@@ -74,36 +74,31 @@ func (e ConditionalExpression) Where(args ...any) ConditionalExpression {
 		return e
 	}
 	connector, ok := args[argNum-1].(Connector)
-	if !ok {
-		connector = AND
-	} else {
+	if ok {
 		argNum--
+	} else {
+		connector = AND
 	}
 	if e.IsNotEmpty() {
 		e.AddSql(" ")
 		e.AddSql(connector.String())
 		e.AddSql(" ")
 	}
-	if argNum < 2 {
+	switch argNum {
+	case 1:
 		e.AddSql(e.nameToString(args[0]))
-	} else {
-		var value any
-		if argNum > 2 {
-			value = args[2]
-		}
-		operator, operatorIsString := args[1].(string)
-		if operatorIsString {
-			e.AddSql(e.nameToString(args[0]))
-			e.AddSql(" ")
-			e.AddSql(operator)
-			e.AddSql(" ")
-			e.AddSql(e.valueToString(value, operator))
-		} else {
-			columnAsString := fmt.Sprintf("%s", args[1])
-			e.AddSql(columnAsString)
-			e.AddSql(" ")
-			e.AddSql(e.valueToString(operator, columnAsString))
-		}
+	case 2:
+		operator := fmt.Sprintf("%s", args[0])
+		e.AddSql(operator)
+		e.AddSql(" ")
+		e.AddSql(e.valueToString(args[1], operator))
+	default:
+		operator := fmt.Sprintf("%s", args[1])
+		e.AddSql(e.nameToString(args[0]))
+		e.AddSql(" ")
+		e.AddSql(operator)
+		e.AddSql(" ")
+		e.AddSql(e.valueToString(args[2], operator))
 	}
 	return e
 }
@@ -131,7 +126,7 @@ func (e ConditionalExpression) nameToString(exp any) string {
 func (e ConditionalExpression) sliceToString(exp []any) string {
 	var separator string
 	var result strings.Builder
-	for value := range exp {
+	for _, value := range exp {
 		result.WriteString(separator)
 		result.WriteString(e.nameToString(value))
 		separator = " AND "
@@ -176,7 +171,7 @@ func (e ConditionalExpression) valueListToString(values []any, operator string) 
 	} else {
 		sep = ", "
 	}
-	for value := range values {
+	for _, value := range values {
 		result.WriteString(separator)
 		result.WriteString(e.valueToString(value, operator))
 		separator = sep

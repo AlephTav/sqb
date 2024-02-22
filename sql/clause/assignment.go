@@ -19,11 +19,13 @@ func NewAssignmentClause[T sqb.Statement[T]](self T) *AssignmentClause[T] {
 //   - Assign(column any, value any)
 func (a *AssignmentClause[T]) Assign(column any, args ...any) T {
 	a.exp.Append(column, args...)
+	a.self.Dirty()
 	return a.self
 }
 
 func (a *AssignmentClause[T]) CleanAssignment() T {
 	a.exp.Clean()
+	a.self.Dirty()
 	return a.self
 }
 

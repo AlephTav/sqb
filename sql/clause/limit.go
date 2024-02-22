@@ -16,11 +16,13 @@ func NewLimitClause[T sqb.Statement[T]](self T) *LimitClause[T] {
 
 func (l *LimitClause[T]) Limit(limit int) T {
 	l.limit = limit
+	l.self.Dirty()
 	return l.self
 }
 
 func (l *LimitClause[T]) CleanLimit() T {
 	l.limit = -1
+	l.self.Dirty()
 	return l.self
 }
 

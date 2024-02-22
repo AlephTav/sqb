@@ -96,11 +96,13 @@ func (j *JoinClause[T]) NaturalRightOuterJoin(table any, args ...any) T {
 //   - Join(joinType string, table any, alias any, condition any)
 func (j *JoinClause[T]) Join(joinType string, table any, args ...any) T {
 	j.exp.Append(joinType, table, args...)
+	j.self.Dirty()
 	return j.self
 }
 
 func (j *JoinClause[T]) CleanJoin() T {
 	j.exp.Clean()
+	j.self.Dirty()
 	return j.self
 }
 

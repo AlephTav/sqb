@@ -34,10 +34,20 @@ func (v *ValueListClause[T]) Values(values any, args ...any) T {
 		}
 	}
 	v.exp.Append(values)
+	v.self.Dirty()
 	return v.self
 }
 
 func (v *ValueListClause[T]) CleanValueList() T {
 	v.exp.Clean()
+	v.self.Dirty()
 	return v.self
+}
+
+func (v *ValueListClause[T]) CopyValueList() *ValueListClause[T] {
+	return &ValueListClause[T]{v.self, v.exp.Copy()}
+}
+
+func (v *ValueListClause[T]) BuildValueList() (T, sql.ValueListExpression) {
+	return v.self, v.exp
 }

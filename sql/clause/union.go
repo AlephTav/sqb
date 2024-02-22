@@ -36,6 +36,7 @@ func (u *UnionClause[T]) UnionType(unionType string, query sqb.QueryStmt[T]) T {
 	} else {
 		u.queries = append(u.queries, UnionQuery[T]{unionType, query})
 	}
+	u.self.Dirty()
 	return u.self
 }
 

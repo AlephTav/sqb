@@ -19,11 +19,13 @@ func NewSelectClause[T sqb.Statement[T]](self T) *SelectClause[T] {
 //   - Select(column any, alias any)
 func (s *SelectClause[T]) Select(column any, args ...any) T {
 	s.exp.Append(column, args...)
+	s.self.Dirty()
 	return s.self
 }
 
 func (s *SelectClause[T]) CleanSelect() T {
 	s.exp.Clean()
+	s.self.Dirty()
 	return s.self
 }
 

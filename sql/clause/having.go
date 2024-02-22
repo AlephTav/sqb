@@ -22,6 +22,7 @@ func NewHavingClause[T sqb.Statement[T]](self T) *HavingClause[T] {
 //   - AndHaving(operator string, operand any)
 func (h *HavingClause[T]) AndHaving(args ...any) T {
 	h.exp.AndWhere(args...)
+	h.self.Dirty()
 	return h.self
 }
 
@@ -33,6 +34,7 @@ func (h *HavingClause[T]) AndHaving(args ...any) T {
 //   - OrHaving(operator string, operand any)
 func (h *HavingClause[T]) OrHaving(args ...any) T {
 	h.exp.OrWhere(args...)
+	h.self.Dirty()
 	return h.self
 }
 
@@ -44,11 +46,13 @@ func (h *HavingClause[T]) OrHaving(args ...any) T {
 //   - Having(operator string, operand any)
 func (h *HavingClause[T]) Having(args ...any) T {
 	h.exp.Where(args...)
+	h.self.Dirty()
 	return h.self
 }
 
 func (h *HavingClause[T]) CleanHaving() T {
 	h.exp.Clean()
+	h.self.Dirty()
 	return h.self
 }
 
