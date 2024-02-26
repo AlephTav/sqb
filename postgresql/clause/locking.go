@@ -16,15 +16,15 @@ func NewLockingClause[T sqb.Statement[T]](self T) *LockingClause[T] {
 // ForNoKeyUpdate sets the lock for no key update clause of the statement:
 //   - ForNoKeyUpdate(table any)
 //   - ForNoKeyUpdate(table any, option string)
-func (l *LockingClause[T]) ForNoKeyUpdate(table any, args ...string) T {
-	return l.ForLock("NO KEY UPDATE", table, args...)
+func (l *LockingClause[T]) ForNoKeyUpdate(args ...any) T {
+	return l.ForLock("NO KEY UPDATE", args...)
 }
 
 // ForKeyShare sets the lock for key share clause of the statement:
 //   - ForKeyShare(table any)
 //   - ForKeyShare(table any, option string)
-func (l *LockingClause[T]) ForKeyShare(table any, args ...string) T {
-	return l.ForLock("KEY SHARE", table, args...)
+func (l *LockingClause[T]) ForKeyShare(args ...any) T {
+	return l.ForLock("KEY SHARE", args...)
 }
 
 func (l *LockingClause[T]) CopyLock() *LockingClause[T] {

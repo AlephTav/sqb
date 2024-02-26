@@ -47,6 +47,7 @@ func (w *WithClause[T]) BuildWith() T {
 		w.self.AddParams(w.exp.Params())
 		w.self.AddSql("WITH ")
 		w.self.AddSql(w.exp.String())
+		w.self.AddSql(" ")
 	}
 	return w.self
 }

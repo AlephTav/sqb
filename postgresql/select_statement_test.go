@@ -900,3 +900,186 @@ func TestSelectStmt_LimitAndOffset(t *testing.T) {
 }
 
 //endregion
+
+//region LOCK
+
+func TestSelectStmt_SelectForLock(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		ForUpdate()
+
+	sqb.CheckSql(t, "SELECT * FROM t1 FOR UPDATE", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_SelectForLockWithTables(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Limit(1).
+		Offset(0).
+		ForShare([]any{"t1", "t2"})
+
+	sqb.CheckSql(t, "SELECT * FROM t1 LIMIT 1 OFFSET 0 FOR SHARE OF t1, t2", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_SelectForLockWithOption(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		ForNoKeyUpdate(nil, "NOWAIT")
+
+	sqb.CheckSql(t, "SELECT * FROM t1 FOR NO KEY UPDATE NOWAIT", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_SelectForLockWithTablesAndOption(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		ForKeyShare("t1", "SKIP LOCKED")
+
+	sqb.CheckSql(t, "SELECT * FROM t1 FOR KEY SHARE OF t1 SKIP LOCKED", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+//endregion
+
+//region UNION
+
+func TestSelectStmt_UnionOfSimpleQueries(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Union(NewSelectStmt(nil).From("t2"))
+
+	sqb.CheckSql(t, "(SELECT * FROM t1) UNION (SELECT * FROM t2)", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_UnionOfQueriesWithSorting(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		Union(NewSelectStmt(nil).From("t2").OrderBy("t2.id", "ASC")).
+		Union(NewSelectStmt(nil).From("t3").OrderBy("t3.id", "DESC")).
+		OrderBy("id", "DESC")
+
+	sqb.CheckSql(
+		t,
+		"(SELECT * FROM t1) UNION (SELECT * FROM t2 ORDER BY t2.id ASC) UNION "+
+			"(SELECT * FROM t3 ORDER BY t3.id DESC) ORDER BY id DESC",
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_UnionOfDifferentTypes(t *testing.T) {
+	st := NewSelectStmt(nil).
+		From("t1").
+		UnionAll(NewSelectStmt(nil).From("t2")).
+		UnionIntersect(NewSelectStmt(nil).From("t3")).
+		UnionIntersectAll(NewSelectStmt(nil).From("t4")).
+		UnionExcept(NewSelectStmt(nil).From("t5")).
+		UnionExceptAll(NewSelectStmt(nil).From("t6")).
+		Paginate(10, 5)
+
+	sqb.CheckSql(
+		t,
+		"(SELECT * FROM t1) "+
+			"UNION ALL (SELECT * FROM t2) "+
+			"INTERSECT (SELECT * FROM t3) "+
+			"INTERSECT ALL (SELECT * FROM t4) "+
+			"EXCEPT (SELECT * FROM t5) "+
+			"EXCEPT ALL (SELECT * FROM t6) "+
+			"LIMIT 5 OFFSET 50",
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+//endregion
+
+//region WITH
+
+func TestSelectStmt_WithSimpleQuery(t *testing.T) {
+	st := NewSelectStmt(nil).
+		With(NewSelectStmt(nil).From("t1"), "tb").
+		From("tb")
+
+	sqb.CheckSql(t, "WITH tb AS (SELECT * FROM t1) SELECT * FROM tb", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WithRawExpression(t *testing.T) {
+	st := NewSelectStmt(nil).
+		With("(SELECT * FROM t1)", "tb").
+		With(sql.NewExp("n1 AS NULL")).
+		With(nil, "n2").
+		From("tb")
+
+	sqb.CheckSql(t, "WITH tb AS (SELECT * FROM t1), n1 AS NULL, n2 AS NULL SELECT * FROM tb", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WithSeveralQueries(t *testing.T) {
+	st := NewSelectStmt(nil).
+		With(
+			NewSelectStmt(nil).
+				From("orders").
+				Select(sqb.Map("", "region", "total_sales", "SUM(amount)")).
+				GroupBy("region"),
+			"regional_sales",
+		).
+		With(
+			NewSelectStmt(nil).
+				From("regional_sales").
+				Select("region").
+				Select("SUM(total_sales) / 10").
+				Where("total_sales", ">", NewSelectStmt(nil).From("regional_sales")),
+			"top_regions",
+		).
+		From("orders").
+		Select("region").
+		Select("product").
+		Select(sqb.Map(
+			"product_units", "SUM(quantity)",
+			"product_sales", "SUM(amount)",
+		)).
+		Where("region", "IN", NewSelectStmt(nil).From("top_regions").Select("region")).
+		OrderBy([]any{"region", "product"})
+
+	sqb.CheckSql(
+		t,
+		"WITH regional_sales AS (SELECT region, SUM(amount) total_sales FROM orders GROUP BY region), "+
+			"top_regions AS (SELECT region, SUM(total_sales) / 10 FROM regional_sales WHERE total_sales > "+
+			"(SELECT * FROM regional_sales)) SELECT region, product, SUM(quantity) product_units, "+
+			"SUM(amount) product_sales FROM orders WHERE region IN (SELECT region FROM top_regions) "+
+			"ORDER BY region, product",
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+func TestSelectStmt_WithRecursiveQuery(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		WithRecursive(
+			NewValuesStmt(nil).
+				Values([]any{1}).
+				UnionAll(
+					NewSelectStmt(nil).
+						From("t").
+						Select(sql.NewExp("n + 1")).Where("n", "<", 100),
+				),
+			"t(n)",
+		).
+		From("t").
+		Select("SUM(n)")
+
+	sqb.CheckSql(
+		t,
+		"WITH RECURSIVE t(n) AS ((VALUES (:p1)) UNION ALL (SELECT n + 1 FROM t WHERE n < :p2)) "+
+			"SELECT SUM(n) FROM t",
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{"p1": 1, "p2": 100}, st.Params())
+}
+
+//endregion

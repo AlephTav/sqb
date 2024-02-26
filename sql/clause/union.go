@@ -2,14 +2,14 @@ package sql
 
 import "github.com/AlephTav/sqb"
 
-type UnionQuery[T any] struct {
+type UnionQuery struct {
 	UnionType string
-	Query     sqb.QueryStmt[T]
+	Query     sqb.Query
 }
 
 type UnionClause[T sqb.QueryStmt[T]] struct {
 	self    T
-	queries []UnionQuery[T]
+	queries []UnionQuery
 }
 
 func NewUnionClause[T sqb.QueryStmt[T]](self T) *UnionClause[T] {
@@ -20,21 +20,21 @@ func (u *UnionClause[T]) IsUnion() bool {
 	return len(u.queries) > 0
 }
 
-func (u *UnionClause[T]) Union(query sqb.QueryStmt[T]) T {
+func (u *UnionClause[T]) Union(query sqb.Query) T {
 	return u.UnionType("UNION", query)
 }
 
-func (u *UnionClause[T]) UnionAll(query sqb.QueryStmt[T]) T {
+func (u *UnionClause[T]) UnionAll(query sqb.Query) T {
 	return u.UnionType("UNION ALL", query)
 }
 
-func (u *UnionClause[T]) UnionType(unionType string, query sqb.QueryStmt[T]) T {
+func (u *UnionClause[T]) UnionType(unionType string, query sqb.Query) T {
 	if u.IsUnion() {
-		u.queries = append(u.queries, UnionQuery[T]{unionType, u.self.Copy()})
-		u.queries = append(u.queries, UnionQuery[T]{unionType, query})
-		u.self.Clean()
+		u.queries = append(u.queries, UnionQuery{unionType, query})
 	} else {
-		u.queries = append(u.queries, UnionQuery[T]{unionType, query})
+		u.queries = append(u.queries, UnionQuery{unionType, u.self.Copy()})
+		u.queries = append(u.queries, UnionQuery{unionType, query})
+		u.self.Clean()
 	}
 	u.self.Dirty()
 	return u.self

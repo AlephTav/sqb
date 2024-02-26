@@ -24,24 +24,30 @@ func NewLockingClause[T sqb.Statement[T]](self T) *LockingClause[T] {
 // ForUpdate sets the lock for update clause of the statement:
 //   - ForUpdate(table any)
 //   - ForUpdate(table any, option string)
-func (l *LockingClause[T]) ForUpdate(table any, args ...string) T {
-	return l.ForLock("UPDATE", table, args...)
+func (l *LockingClause[T]) ForUpdate(args ...any) T {
+	return l.ForLock("UPDATE", args...)
 }
 
 // ForShare sets the lock for share clause of the statement:
 //   - ForShare(table any)
 //   - ForShare(table any, option string)
-func (l *LockingClause[T]) ForShare(table any, args ...string) T {
-	return l.ForLock("SHARE", table, args...)
+func (l *LockingClause[T]) ForShare(args ...any) T {
+	return l.ForLock("SHARE", args...)
 }
 
 // ForLock sets the lock clause of the statement:
 //   - ForLock(strength string, table any)
 //   - ForLock(strength string, table any, option string)
-func (l *LockingClause[T]) ForLock(strength string, table any, args ...string) T {
+func (l *LockingClause[T]) ForLock(strength string, args ...any) T {
 	var option string
+	var table any
+	if len(args) > 1 {
+		if opt, ok := args[1].(string); ok {
+			option = opt
+		}
+	}
 	if len(args) > 0 {
-		option = args[0]
+		table = args[0]
 	}
 	if strength != l.lockStrength {
 		l.lockOf.Clean()
@@ -76,7 +82,7 @@ func (l *LockingClause[T]) BuildLock() T {
 	if l.lockStrength == "" {
 		return l.self
 	}
-	l.self.AddSql(" FRO ")
+	l.self.AddSql(" FOR ")
 	l.self.AddSql(l.lockStrength)
 	if l.lockOf.IsNotEmpty() {
 		l.self.AddSql(" OF ")

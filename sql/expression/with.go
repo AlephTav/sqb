@@ -32,9 +32,6 @@ func (e WithExpression) Append(recursive bool, query any, args ...any) {
 	if alias == nil {
 		exp = query
 	} else if aliasAsString, ok := args[0].(string); ok {
-		if query == nil {
-			query = ""
-		}
 		exp = map[string]any{aliasAsString: query}
 	} else {
 		exp = []any{alias, query}
@@ -72,7 +69,7 @@ func (e WithExpression) sliceToString(exp []any) string {
 			alias = nil
 			query = value
 		}
-		e.addToResult(alias, query, separator, result)
+		e.addToResult(alias, query, separator, &result)
 		separator = " AND "
 	}
 	return result.String()
@@ -83,13 +80,13 @@ func (e WithExpression) mapToString(exp map[string]any) string {
 	var result strings.Builder
 	for key, value := range exp {
 		result.WriteString(separator)
-		e.addToResult(key, value, separator, result)
+		e.addToResult(key, value, separator, &result)
 		separator = " AND "
 	}
 	return result.String()
 }
 
-func (e WithExpression) addToResult(alias any, query any, separator string, result strings.Builder) {
+func (e WithExpression) addToResult(alias any, query any, separator string, result *strings.Builder) {
 	var aliasAsString string
 	if alias != nil {
 		aliasAsString = e.nameToString(alias)

@@ -46,6 +46,118 @@ func NewSelectStmt(db sqb.StatementExecutor) *SelectStmt {
 
 func (s *SelectStmt) ItIsQuery() {}
 
+func (s *SelectStmt) Paginate(page, size int) *SelectStmt {
+	s.Offset(size * page)
+	s.Limit(size)
+	return s
+}
+
+func (s *SelectStmt) Column(args ...string) ([]any, error) {
+	if len(args) == 0 || args[0] == "" {
+		return s.DataFetching.Column()
+	}
+	built := s.IsBuilt()
+	prevSelect := s.SelectClause
+	s.SelectClause = cls.NewSelectClause[*SelectStmt](s)
+	s.Select(args[0])
+	result, err := s.DataFetching.Column()
+	s.SelectClause = prevSelect
+	if !built {
+		s.Dirty()
+	}
+	return result, err
+}
+
+func (s *SelectStmt) One(args ...string) (any, error) {
+	if len(args) == 0 || args[0] == "" {
+		return s.DataFetching.One()
+	}
+	built := s.IsBuilt()
+	prevSelect := s.SelectClause
+	s.SelectClause = cls.NewSelectClause[*SelectStmt](s)
+	s.Select(args[0])
+	result, err := s.DataFetching.One()
+	s.SelectClause = prevSelect
+	if !built {
+		s.Dirty()
+	}
+	return result, err
+}
+
+func (s *SelectStmt) Count(column string) (int, error) {
+	prevLimit := s.LimitClause
+	prevOffset := s.OffsetClause
+	prevOrder := s.OrderClause
+	prevGroup := s.GroupClause
+	s.LimitClause = cls.NewLimitClause[*SelectStmt](s)
+	s.OffsetClause = cls.NewOffsetClause[*SelectStmt](s)
+	s.OrderClause = cls.NewOrderClause[*SelectStmt](s)
+	s.GroupClause = cls.NewGroupClause[*SelectStmt](s)
+	result, err := s.CountWithNonConditionalClauses(column)
+	s.LimitClause = prevLimit
+	s.OffsetClause = prevOffset
+	s.OrderClause = prevOrder
+	s.GroupClause = prevGroup
+	return result, err
+}
+
+func (s *SelectStmt) CountWithNonConditionalClauses(column string) (int, error) {
+	result, err := s.One("COUNT(" + column + ")")
+	if err != nil {
+		return result.(int), err
+	}
+	return 0, err
+}
+
+func (s *SelectStmt) Pages(size, page int) func() (map[string]any, error) {
+	var err error
+	var rows []map[string]any
+	i, count := -1, 0
+	return func() (map[string]any, error) {
+		for {
+			if i < 0 {
+				if rows, err = s.Paginate(page, size).Rows(); err != nil {
+					return nil, err
+				}
+				count = len(rows)
+			}
+			if i < count-1 {
+				i++
+				return rows[i], nil
+			}
+			if count < size {
+				return nil, nil
+			}
+			i = -1
+			page++
+		}
+	}
+}
+
+func (s *SelectStmt) Batches(size, page int) func() ([]map[string]any, error) {
+	var err error
+	var count = -1
+	var rows []map[string]any
+	return func() ([]map[string]any, error) {
+		for {
+			if count < 0 {
+				if rows, err = s.Paginate(page, size).Rows(); err != nil {
+					return nil, err
+				}
+				count = len(rows)
+			}
+			if count > 0 {
+				return rows, nil
+			}
+			if count < size {
+				return nil, nil
+			}
+			count = -1
+			page++
+		}
+	}
+}
+
 func (s *SelectStmt) Clean() *SelectStmt {
 	s.CleanWith()
 	s.CleanFrom()

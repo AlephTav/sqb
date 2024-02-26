@@ -32,6 +32,12 @@ func NewValuesStmt(db sqb.StatementExecutor) *ValuesStmt {
 
 func (s *ValuesStmt) ItIsQuery() {}
 
+func (s *ValuesStmt) Paginate(page, size int) *ValuesStmt {
+	s.Offset(size * page)
+	s.Limit(size)
+	return s
+}
+
 func (s *ValuesStmt) Clean() *ValuesStmt {
 	s.CleanValues()
 	s.CleanOrder()
