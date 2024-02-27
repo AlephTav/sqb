@@ -38,8 +38,8 @@ func (w *WithClause[T]) CleanWith() T {
 	return w.self
 }
 
-func (w *WithClause[T]) CopyWith() *WithClause[T] {
-	return &WithClause[T]{w.self, w.exp.Copy()}
+func (w *WithClause[T]) CopyWith(self T) *WithClause[T] {
+	return &WithClause[T]{self, w.exp.Copy()}
 }
 
 func (w *WithClause[T]) BuildWith() T {

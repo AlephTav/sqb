@@ -13,8 +13,8 @@ func NewValueListClause[T sqb.ColumnsAwareStmt[T]](self T) *ValueListClause[T] {
 	return &ValueListClause[T]{sql.NewValueListClause[T](self)}
 }
 
-func (v *ValueListClause[T]) CopyValueList() *ValueListClause[T] {
-	return &ValueListClause[T]{v.ValueListClause.CopyValueList()}
+func (v *ValueListClause[T]) CopyValueList(self T) *ValueListClause[T] {
+	return &ValueListClause[T]{v.ValueListClause.CopyValueList(self)}
 }
 
 func (v *ValueListClause[T]) BuildValueList() T {

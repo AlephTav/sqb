@@ -47,15 +47,11 @@ func (s *ValuesStmt) Clean() *ValuesStmt {
 }
 
 func (s *ValuesStmt) Copy() *ValuesStmt {
-	st := &ValuesStmt{
-		nil,
-		nil,
-		nil,
-		s.ValuesClause.CopyValues(),
-		s.OrderClause.CopyOrder(),
-		s.LimitClause.CopyLimit(),
-		s.OffsetClause.CopyOffset(),
-	}
+	st := &ValuesStmt{}
+	st.ValuesClause = s.CopyValues(st)
+	st.OrderClause = s.CopyOrder(st)
+	st.LimitClause = s.CopyLimit(st)
+	st.OffsetClause = s.CopyOffset(st)
 	st.DataFetching = execution.NewDataFetching[*ValuesStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*ValuesStmt](st, s.Executor())
 	st.UnionClause = postgresql.NewUnionClause[*ValuesStmt](st)

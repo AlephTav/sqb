@@ -29,8 +29,8 @@ func (u *UsingClause[T]) CleanUsing() T {
 	return u.self
 }
 
-func (u *UsingClause[T]) CopyUsing() *UsingClause[T] {
-	return &UsingClause[T]{u.self, u.exp.Copy()}
+func (u *UsingClause[T]) CopyUsing(self T) *UsingClause[T] {
+	return &UsingClause[T]{self, u.exp.Copy()}
 }
 
 func (u *UsingClause[T]) BuildUsing() T {

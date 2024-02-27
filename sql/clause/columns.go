@@ -26,8 +26,8 @@ func (c *ColumnsClause[T]) CleanColumns() T {
 	return c.self
 }
 
-func (c *ColumnsClause[T]) CopyColumns() *ColumnsClause[T] {
-	return &ColumnsClause[T]{c.self, c.exp.Copy()}
+func (c *ColumnsClause[T]) CopyColumns(self T) *ColumnsClause[T] {
+	return &ColumnsClause[T]{self, c.exp.Copy()}
 }
 
 func (c *ColumnsClause[T]) BuildColumns() T {

@@ -26,8 +26,8 @@ func (o *OffsetClause[T]) CleanOffset() T {
 	return o.self
 }
 
-func (o *OffsetClause[T]) CopyOffset() *OffsetClause[T] {
-	return &OffsetClause[T]{o.self, o.offset}
+func (o *OffsetClause[T]) CopyOffset(self T) *OffsetClause[T] {
+	return &OffsetClause[T]{self, o.offset}
 }
 
 func (o *OffsetClause[T]) BuildOffset() T {

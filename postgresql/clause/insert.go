@@ -13,8 +13,8 @@ func NewInsertClause[T sqb.Statement[T]](self T) *InsertClause[T] {
 	return &InsertClause[T]{sql.NewInsertClause[T](self)}
 }
 
-func (i *InsertClause[T]) CopyInsert() *InsertClause[T] {
-	return &InsertClause[T]{i.InsertClause.CopyInsert()}
+func (i *InsertClause[T]) CopyInsert(self T) *InsertClause[T] {
+	return &InsertClause[T]{i.InsertClause.CopyInsert(self)}
 }
 
 func (i *InsertClause[T]) BuildInsert() T {

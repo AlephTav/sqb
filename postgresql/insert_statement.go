@@ -45,16 +45,14 @@ func (s *InsertStmt) Clean() *InsertStmt {
 }
 
 func (s *InsertStmt) Copy() *InsertStmt {
-	st := &InsertStmt{
-		nil,
-		s.WithClause.CopyWith(),
-		s.InsertClause.CopyInsert(),
-		s.ColumnsClause.CopyColumns(),
-		s.ValueListClause.CopyValueList(),
-		s.QueryClause.CopyQuery(),
-		s.ConflictClause.CopyConflict(),
-		s.ReturningClause.CopyReturning(),
-	}
+	st := &InsertStmt{}
+	st.WithClause = s.CopyWith(st)
+	st.InsertClause = s.CopyInsert(st)
+	st.ColumnsClause = s.CopyColumns(st)
+	st.ValueListClause = s.CopyValueList(st)
+	st.QueryClause = s.CopyQuery(st)
+	st.ConflictClause = s.CopyConflict(st)
+	st.ReturningClause = s.CopyReturning(st)
 	st.BaseStatement = sql.NewBaseStatement[*InsertStmt](st, s.Executor())
 	return st
 }

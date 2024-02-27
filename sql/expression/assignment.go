@@ -25,11 +25,7 @@ func (e AssignmentExpression) Append(column any, args ...any) {
 	if len(args) == 0 {
 		e.AddSql(e.nameToString(column))
 	} else {
-		columnAsString, ok := column.(string)
-		if !ok {
-			columnAsString = e.nameToString(args[0])
-		}
-		e.AddSql(e.mapToString(map[string]any{columnAsString: args[1]}))
+		e.AddSql(e.mapToString(sqb.Map(column, args[0])))
 	}
 }
 
@@ -44,8 +40,8 @@ func (e AssignmentExpression) nameToString(exp any) string {
 		return e.queryToString(exp.(sqb.Query))
 	case []any:
 		return e.sliceToString(exp.([]any))
-	case map[string]any:
-		return e.mapToString(exp.(map[string]any))
+	case sqb.SliceMap:
+		return e.mapToString(exp.(sqb.SliceMap))
 	default:
 		return fmt.Sprintf("%s", exp)
 	}
@@ -54,7 +50,7 @@ func (e AssignmentExpression) nameToString(exp any) string {
 func (e AssignmentExpression) sliceToString(exp []any) string {
 	var separator string
 	var result strings.Builder
-	for value := range exp {
+	for _, value := range exp {
 		result.WriteString(separator)
 		result.WriteString(e.nameToString(value))
 		separator = ", "
@@ -62,14 +58,14 @@ func (e AssignmentExpression) sliceToString(exp []any) string {
 	return result.String()
 }
 
-func (e AssignmentExpression) mapToString(exp map[string]any) string {
+func (e AssignmentExpression) mapToString(exp sqb.SliceMap) string {
 	var separator string
 	var result strings.Builder
-	for key, value := range exp {
+	for i, count := 0, len(exp); i < count; i += 2 {
 		result.WriteString(separator)
-		result.WriteString(e.nameToString(key))
+		result.WriteString(e.nameToString(exp[i]))
 		result.WriteString(" = ")
-		result.WriteString(e.valueToString(value))
+		result.WriteString(e.valueToString(exp[i+1]))
 		separator = ", "
 	}
 	return result.String()

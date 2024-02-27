@@ -190,9 +190,9 @@ func (c *ConflictClause[T]) CleanConflict() T {
 	return c.self
 }
 
-func (c *ConflictClause[T]) CopyConflict() *ConflictClause[T] {
+func (c *ConflictClause[T]) CopyConflict(self T) *ConflictClause[T] {
 	return &ConflictClause[T]{
-		c.self,
+		self,
 		c.indexColumn.Copy(),
 		c.indexPredicate.Copy(),
 		c.assignment.Copy(),

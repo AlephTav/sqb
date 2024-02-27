@@ -27,6 +27,6 @@ func (l *LockingClause[T]) ForKeyShare(args ...any) T {
 	return l.ForLock("KEY SHARE", args...)
 }
 
-func (l *LockingClause[T]) CopyLock() *LockingClause[T] {
-	return &LockingClause[T]{l.LockingClause.CopyLock()}
+func (l *LockingClause[T]) CopyLock(self T) *LockingClause[T] {
+	return &LockingClause[T]{l.LockingClause.CopyLock(self)}
 }

@@ -29,8 +29,8 @@ func (s *SelectClause[T]) CleanSelect() T {
 	return s.self
 }
 
-func (s *SelectClause[T]) CopySelect() *SelectClause[T] {
-	return &SelectClause[T]{s.self, s.exp.Copy()}
+func (s *SelectClause[T]) CopySelect(self T) *SelectClause[T] {
+	return &SelectClause[T]{self, s.exp.Copy()}
 }
 
 func (s *SelectClause[T]) BuildSelect() T {

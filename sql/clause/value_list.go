@@ -44,8 +44,8 @@ func (v *ValueListClause[T]) CleanValueList() T {
 	return v.self
 }
 
-func (v *ValueListClause[T]) CopyValueList() *ValueListClause[T] {
-	return &ValueListClause[T]{v.self, v.exp.Copy()}
+func (v *ValueListClause[T]) CopyValueList(self T) *ValueListClause[T] {
+	return &ValueListClause[T]{self, v.exp.Copy()}
 }
 
 func (v *ValueListClause[T]) BuildValueList() (T, sql.ValueListExpression) {

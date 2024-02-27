@@ -56,8 +56,8 @@ func (w *WhereClause[T]) CleanWhere() T {
 	return w.self
 }
 
-func (w *WhereClause[T]) CopyWhere() *WhereClause[T] {
-	return &WhereClause[T]{w.self, w.exp.Copy()}
+func (w *WhereClause[T]) CopyWhere(self T) *WhereClause[T] {
+	return &WhereClause[T]{self, w.exp.Copy()}
 }
 
 func (w *WhereClause[T]) BuildWhere() T {

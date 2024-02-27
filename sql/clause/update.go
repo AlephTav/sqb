@@ -29,8 +29,8 @@ func (u *UpdateClause[T]) CleanUpdate() T {
 	return u.self
 }
 
-func (u *UpdateClause[T]) CopyUpdate() *UpdateClause[T] {
-	return &UpdateClause[T]{u.self, u.exp.Copy()}
+func (u *UpdateClause[T]) CopyUpdate(self T) *UpdateClause[T] {
+	return &UpdateClause[T]{self, u.exp.Copy()}
 }
 
 func (u *UpdateClause[T]) BuildUpdate() (T, sql.DirectListExpression) {

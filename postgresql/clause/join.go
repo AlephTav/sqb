@@ -41,6 +41,6 @@ func (j *JoinClause[T]) NaturalFullOuterJoin(table any, args ...any) T {
 	return j.Join("NATURAL FULL OUTER JOIN", table, args...)
 }
 
-func (j *JoinClause[T]) CopyJoin() *JoinClause[T] {
-	return &JoinClause[T]{j.JoinClause.CopyJoin()}
+func (j *JoinClause[T]) CopyJoin(self T) *JoinClause[T] {
+	return &JoinClause[T]{j.JoinClause.CopyJoin(self)}
 }

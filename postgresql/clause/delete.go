@@ -27,8 +27,8 @@ func (d *DeleteClause[T]) CleanDelete() T {
 	return d.DeleteClause.CleanDelete()
 }
 
-func (d *DeleteClause[T]) CopyDelete() *DeleteClause[T] {
-	return &DeleteClause[T]{d.DeleteClause.CopyDelete(), d.only}
+func (d *DeleteClause[T]) CopyDelete(self T) *DeleteClause[T] {
+	return &DeleteClause[T]{d.DeleteClause.CopyDelete(self), d.only}
 }
 
 func (d *DeleteClause[T]) BuildDelete() T {

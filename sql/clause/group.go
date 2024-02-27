@@ -29,8 +29,8 @@ func (g *GroupClause[T]) CleanGroup() T {
 	return g.self
 }
 
-func (g *GroupClause[T]) CopyGroup() *GroupClause[T] {
-	return &GroupClause[T]{g.self, g.exp.Copy()}
+func (g *GroupClause[T]) CopyGroup(self T) *GroupClause[T] {
+	return &GroupClause[T]{self, g.exp.Copy()}
 }
 
 func (g *GroupClause[T]) BuildGroup() T {

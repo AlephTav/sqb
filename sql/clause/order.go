@@ -29,8 +29,8 @@ func (o *OrderClause[T]) CleanOrder() T {
 	return o.self
 }
 
-func (o *OrderClause[T]) CopyOrder() *OrderClause[T] {
-	return &OrderClause[T]{o.self, o.exp.Copy()}
+func (o *OrderClause[T]) CopyOrder(self T) *OrderClause[T] {
+	return &OrderClause[T]{self, o.exp.Copy()}
 }
 
 func (o *OrderClause[T]) BuildOrder() T {

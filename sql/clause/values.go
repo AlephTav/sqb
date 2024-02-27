@@ -26,8 +26,8 @@ func (v *ValuesClause[T]) CleanValues() T {
 	return v.self
 }
 
-func (v *ValuesClause[T]) CopyValues() *ValuesClause[T] {
-	return &ValuesClause[T]{v.self, v.exp.Copy()}
+func (v *ValuesClause[T]) CopyValues(self T) *ValuesClause[T] {
+	return &ValuesClause[T]{self, v.exp.Copy()}
 }
 
 func (v *ValuesClause[T]) BuildValues() T {

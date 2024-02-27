@@ -29,8 +29,8 @@ func (d *DeleteClause[T]) CleanDelete() T {
 	return d.self
 }
 
-func (d *DeleteClause[T]) CopyDelete() *DeleteClause[T] {
-	return &DeleteClause[T]{d.self, d.exp.Copy()}
+func (d *DeleteClause[T]) CopyDelete(self T) *DeleteClause[T] {
+	return &DeleteClause[T]{self, d.exp.Copy()}
 }
 
 func (d *DeleteClause[T]) BuildDelete() (T, sql.DirectListExpression) {

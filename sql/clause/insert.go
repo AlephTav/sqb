@@ -29,8 +29,8 @@ func (i *InsertClause[T]) CleanInsert() T {
 	return i.self
 }
 
-func (i *InsertClause[T]) CopyInsert() *InsertClause[T] {
-	return &InsertClause[T]{i.self, i.exp.Copy()}
+func (i *InsertClause[T]) CopyInsert(self T) *InsertClause[T] {
+	return &InsertClause[T]{self, i.exp.Copy()}
 }
 
 func (i *InsertClause[T]) BuildInsert() (T, sql.DirectListExpression) {

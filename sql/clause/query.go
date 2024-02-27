@@ -23,12 +23,12 @@ func (q *QueryClause[T, Q]) CleanQuery() T {
 	return q.self
 }
 
-func (q *QueryClause[T, Q]) CopyQuery() *QueryClause[T, Q] {
+func (q *QueryClause[T, Q]) CopyQuery(self T) *QueryClause[T, Q] {
 	if q.query == nil {
-		return NewQueryClause[T, Q](q.self)
+		return NewQueryClause[T, Q](self)
 	}
 	query := (*q.query).Copy()
-	return &QueryClause[T, Q]{q.self, &query}
+	return &QueryClause[T, Q]{self, &query}
 }
 
 func (q *QueryClause[T, Q]) BuildQuery() T {

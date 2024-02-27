@@ -27,8 +27,8 @@ func (u *UpdateClause[T]) CleanUpdate() T {
 	return u.UpdateClause.CleanUpdate()
 }
 
-func (u *UpdateClause[T]) CopyUpdate() *UpdateClause[T] {
-	return &UpdateClause[T]{u.UpdateClause.CopyUpdate(), u.only}
+func (u *UpdateClause[T]) CopyUpdate(self T) *UpdateClause[T] {
+	return &UpdateClause[T]{u.UpdateClause.CopyUpdate(self), u.only}
 }
 
 func (u *UpdateClause[T]) BuildUpdate() T {

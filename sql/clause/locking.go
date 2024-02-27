@@ -69,9 +69,9 @@ func (l *LockingClause[T]) CleanLock() T {
 	return l.self
 }
 
-func (l *LockingClause[T]) CopyLock() *LockingClause[T] {
+func (l *LockingClause[T]) CopyLock(self T) *LockingClause[T] {
 	return &LockingClause[T]{
-		l.self,
+		self,
 		l.lockStrength,
 		l.lockOption,
 		l.lockOf.Copy(),

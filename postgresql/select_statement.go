@@ -174,22 +174,18 @@ func (s *SelectStmt) Clean() *SelectStmt {
 }
 
 func (s *SelectStmt) Copy() *SelectStmt {
-	st := &SelectStmt{
-		nil,
-		nil,
-		nil,
-		s.WithClause.CopyWith(),
-		s.FromClause.CopyFrom(),
-		s.SelectClause.CopySelect(),
-		s.JoinClause.CopyJoin(),
-		s.WhereClause.CopyWhere(),
-		s.GroupClause.CopyGroup(),
-		s.HavingClause.CopyHaving(),
-		s.OrderClause.CopyOrder(),
-		s.LimitClause.CopyLimit(),
-		s.OffsetClause.CopyOffset(),
-		s.LockingClause.CopyLock(),
-	}
+	st := &SelectStmt{}
+	st.WithClause = s.CopyWith(st)
+	st.FromClause = s.CopyFrom(st)
+	st.SelectClause = s.CopySelect(st)
+	st.JoinClause = s.CopyJoin(st)
+	st.WhereClause = s.CopyWhere(st)
+	st.GroupClause = s.CopyGroup(st)
+	st.HavingClause = s.CopyHaving(st)
+	st.OrderClause = s.CopyOrder(st)
+	st.LimitClause = s.CopyLimit(st)
+	st.OffsetClause = s.CopyOffset(st)
+	st.LockingClause = s.CopyLock(st)
 	st.DataFetching = execution.NewDataFetching[*SelectStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*SelectStmt](st, s.Executor())
 	st.UnionClause = postgresql.NewUnionClause[*SelectStmt](st)

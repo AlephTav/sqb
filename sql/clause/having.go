@@ -56,8 +56,8 @@ func (h *HavingClause[T]) CleanHaving() T {
 	return h.self
 }
 
-func (h *HavingClause[T]) CopyHaving() *HavingClause[T] {
-	return &HavingClause[T]{h.self, h.exp.Copy()}
+func (h *HavingClause[T]) CopyHaving(self T) *HavingClause[T] {
+	return &HavingClause[T]{self, h.exp.Copy()}
 }
 
 func (h *HavingClause[T]) BuildHaving() T {

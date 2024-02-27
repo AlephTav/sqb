@@ -14,6 +14,10 @@ func NewReturningClause[T sqb.Statement[T]](self T) *ReturningClause[T] {
 	return &ReturningClause[T]{self, sql.EmptyDirectListExp()}
 }
 
+func (r *ReturningClause[T]) ReturningAll() T {
+	return r.Returning("*")
+}
+
 // Returning adds column name and its alias to the returning clause:
 //   - Returning(column any)
 //   - Returning(column any, alias any)
@@ -29,8 +33,8 @@ func (r *ReturningClause[T]) CleanReturning() T {
 	return r.self
 }
 
-func (r *ReturningClause[T]) CopyReturning() *ReturningClause[T] {
-	return &ReturningClause[T]{r.self, r.exp.Copy()}
+func (r *ReturningClause[T]) CopyReturning(self T) *ReturningClause[T] {
+	return &ReturningClause[T]{self, r.exp.Copy()}
 }
 
 func (r *ReturningClause[T]) BuildReturning() T {

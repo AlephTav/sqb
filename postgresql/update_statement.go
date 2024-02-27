@@ -10,6 +10,7 @@ import (
 
 type UpdateStmt struct {
 	*execution.DataFetching[*UpdateStmt]
+	*execution.StatementExecution[*UpdateStmt]
 	*sql.BaseStatement[*UpdateStmt]
 	*cls.WithClause[*UpdateStmt]
 	*postgresql.UpdateClause[*UpdateStmt]
@@ -22,6 +23,7 @@ type UpdateStmt struct {
 func NewUpdateStmt(db sqb.StatementExecutor) *UpdateStmt {
 	st := &UpdateStmt{}
 	st.DataFetching = execution.NewDataFetching[*UpdateStmt](st)
+	st.StatementExecution = execution.NewStatementExecution[*UpdateStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*UpdateStmt](st, db)
 	st.WithClause = cls.NewWithClause[*UpdateStmt](st)
 	st.UpdateClause = postgresql.NewUpdateClause[*UpdateStmt](st)
@@ -45,17 +47,15 @@ func (s *UpdateStmt) Clean() *UpdateStmt {
 }
 
 func (s *UpdateStmt) Copy() *UpdateStmt {
-	st := &UpdateStmt{
-		nil,
-		nil,
-		s.WithClause.CopyWith(),
-		s.UpdateClause.CopyUpdate(),
-		s.AssignmentClause.CopyAssignment(),
-		s.FromClause.CopyFrom(),
-		s.WhereClause.CopyWhere(),
-		s.ReturningClause.CopyReturning(),
-	}
+	st := &UpdateStmt{}
+	st.WithClause = s.CopyWith(st)
+	st.UpdateClause = s.CopyUpdate(st)
+	st.AssignmentClause = s.CopyAssignment(st)
+	st.FromClause = s.CopyFrom(st)
+	st.WhereClause = s.CopyWhere(st)
+	st.ReturningClause = s.CopyReturning(st)
 	st.DataFetching = execution.NewDataFetching[*UpdateStmt](st)
+	st.StatementExecution = execution.NewStatementExecution[*UpdateStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*UpdateStmt](st, s.Executor())
 	return st
 }

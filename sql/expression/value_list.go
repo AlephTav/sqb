@@ -59,20 +59,22 @@ func (e ValueListExpression) sliceToString(exp []any) string {
 	}
 	var separator string
 	var result strings.Builder
-	if _, ok := exp[0].([]any); ok {
+	switch exp[0].(type) {
+	case []any, sqb.SliceMap:
 		for _, value := range exp {
 			result.WriteString(separator)
 			result.WriteString(e.valueListToString(value))
 			separator = ", "
 		}
 		return result.String()
+	default:
+		for _, value := range exp {
+			result.WriteString(separator)
+			result.WriteString(e.valueToString(value))
+			separator = ", "
+		}
+		return "(" + result.String() + ")"
 	}
-	for _, value := range exp {
-		result.WriteString(separator)
-		result.WriteString(e.valueToString(value))
-		separator = ", "
-	}
-	return "(" + result.String() + ")"
 }
 
 func (e ValueListExpression) valueToString(exp any) string {
@@ -86,16 +88,16 @@ func (e ValueListExpression) valueToString(exp any) string {
 		return e.queryToString(exp.(sqb.Query))
 	case []any:
 		return e.sliceOfValuesToString(exp.([]any))
-	case map[string]any:
-		return e.mapOfValuesToString(exp.(map[string]any))
+	case sqb.SliceMap:
+		return e.mapOfValuesToString(exp.(sqb.SliceMap))
 	}
 	return e.nextParameterName(exp)
 }
 
-func (e ValueListExpression) mapOfValuesToString(exp map[string]any) string {
+func (e ValueListExpression) mapOfValuesToString(exp sqb.SliceMap) string {
 	values := make([]any, 0, len(exp))
-	for _, v := range exp {
-		values = append(values, v)
+	for i, count := 0, len(exp); i < count; i += 2 {
+		values = append(values, exp[i+1])
 	}
 	return e.sliceOfValuesToString(values)
 }

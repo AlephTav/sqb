@@ -42,15 +42,12 @@ func (s *DeleteStmt) Clean() *DeleteStmt {
 }
 
 func (s *DeleteStmt) Copy() *DeleteStmt {
-	st := &DeleteStmt{
-		nil,
-		nil,
-		s.WithClause.CopyWith(),
-		s.DeleteClause.CopyDelete(),
-		s.UsingClause.CopyUsing(),
-		s.WhereClause.CopyWhere(),
-		s.ReturningClause.CopyReturning(),
-	}
+	st := &DeleteStmt{}
+	st.WithClause = s.CopyWith(st)
+	st.DeleteClause = s.CopyDelete(st)
+	st.UsingClause = s.CopyUsing(st)
+	st.WhereClause = s.CopyWhere(st)
+	st.ReturningClause = s.CopyReturning(st)
 	st.DataFetching = execution.NewDataFetching[*DeleteStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*DeleteStmt](st, s.Executor())
 	return st

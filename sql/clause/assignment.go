@@ -29,8 +29,8 @@ func (a *AssignmentClause[T]) CleanAssignment() T {
 	return a.self
 }
 
-func (a *AssignmentClause[T]) CopyAssignment() *AssignmentClause[T] {
-	return &AssignmentClause[T]{a.self, a.exp.Copy()}
+func (a *AssignmentClause[T]) CopyAssignment(self T) *AssignmentClause[T] {
+	return &AssignmentClause[T]{self, a.exp.Copy()}
 }
 
 func (a *AssignmentClause[T]) BuildAssignment() T {

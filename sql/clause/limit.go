@@ -26,8 +26,8 @@ func (l *LimitClause[T]) CleanLimit() T {
 	return l.self
 }
 
-func (l *LimitClause[T]) CopyLimit() *LimitClause[T] {
-	return &LimitClause[T]{l.self, l.limit}
+func (l *LimitClause[T]) CopyLimit(self T) *LimitClause[T] {
+	return &LimitClause[T]{self, l.limit}
 }
 
 func (l *LimitClause[T]) BuildLimit() T {

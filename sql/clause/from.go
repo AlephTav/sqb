@@ -29,8 +29,8 @@ func (f *FromClause[T]) CleanFrom() T {
 	return f.self
 }
 
-func (f *FromClause[T]) CopyFrom() *FromClause[T] {
-	return &FromClause[T]{f.self, f.exp.Copy()}
+func (f *FromClause[T]) CopyFrom(self T) *FromClause[T] {
+	return &FromClause[T]{self, f.exp.Copy()}
 }
 
 func (f *FromClause[T]) BuildFrom() T {

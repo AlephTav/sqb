@@ -106,8 +106,8 @@ func (j *JoinClause[T]) CleanJoin() T {
 	return j.self
 }
 
-func (j *JoinClause[T]) CopyJoin() *JoinClause[T] {
-	return &JoinClause[T]{j.self, j.exp.Copy()}
+func (j *JoinClause[T]) CopyJoin(self T) *JoinClause[T] {
+	return &JoinClause[T]{self, j.exp.Copy()}
 }
 
 func (j *JoinClause[T]) BuildJoin() T {
