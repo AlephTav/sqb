@@ -1083,3 +1083,53 @@ func TestSelectStmt_WithRecursiveQuery(t *testing.T) {
 }
 
 //endregion
+
+//region Copy & Clean
+
+func TestSelectStmt_Copy(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewSelectStmt(nil).
+		With("(SELECT * FROM t1)", "tb").
+		Select("c1, c2").
+		From("tb1", "t").
+		InnerJoin("tb", "tb.id = t.id").
+		Where("c1", ">", 0).
+		Having("c2", "<", 1).
+		OrderBy("c3").
+		GroupBy("c4", "DESC").
+		Limit(10).
+		Offset(5).
+		ForUpdate()
+
+	double := st.Copy()
+
+	sqb.CheckSql(
+		t,
+		"WITH tb AS (SELECT * FROM t1) "+
+			"SELECT c1, c2 FROM tb1 t INNER JOIN tb ON tb.id = t.id WHERE c1 > :p1 "+
+			"GROUP BY c4 DESC HAVING c2 < :p2 ORDER BY c3 LIMIT 10 OFFSET 5 FOR UPDATE",
+		double.String(),
+	)
+	sqb.CheckParams(t, map[string]any{"p1": 0, "p2": 1}, double.Params())
+}
+
+func TestSelectStmt_Clean(t *testing.T) {
+	st := NewSelectStmt(nil).
+		With("(SELECT * FROM t1)", "tb").
+		Select("c1, c2").
+		From("tb1", "t").
+		InnerJoin("tb", "tb.id = t.id").
+		Where("c1", ">", 0).
+		Having("c2", "<", 1).
+		OrderBy("c3").
+		GroupBy("c4", "DESC").
+		Limit(10).
+		Offset(5).
+		ForUpdate().
+		Clean()
+
+	sqb.CheckSql(t, "SELECT *", st.String())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+//endregion

@@ -31,10 +31,8 @@ func (e WithExpression) Append(recursive bool, query any, args ...any) {
 	}
 	if alias == nil {
 		exp = query
-	} else if aliasAsString, ok := args[0].(string); ok {
-		exp = map[string]any{aliasAsString: query}
 	} else {
-		exp = []any{alias, query}
+		exp = sqb.Map(alias, query)
 	}
 	e.AddSql(e.nameToString(exp))
 }
@@ -50,8 +48,8 @@ func (e WithExpression) nameToString(exp any) string {
 		return e.queryToString(exp.(sqb.Query))
 	case []any:
 		return e.sliceToString(exp.([]any))
-	case map[string]any:
-		return e.mapToString(exp.(map[string]any))
+	case sqb.SliceMap:
+		return e.mapToString(exp.(sqb.SliceMap))
 	default:
 		return fmt.Sprintf("%s", exp)
 	}
@@ -75,12 +73,12 @@ func (e WithExpression) sliceToString(exp []any) string {
 	return result.String()
 }
 
-func (e WithExpression) mapToString(exp map[string]any) string {
+func (e WithExpression) mapToString(exp sqb.SliceMap) string {
 	var separator string
 	var result strings.Builder
-	for key, value := range exp {
+	for i, count := 0, len(exp); i < count; i += 2 {
 		result.WriteString(separator)
-		e.addToResult(key, value, separator, &result)
+		e.addToResult(exp[i], exp[i+1], separator, &result)
 		separator = " AND "
 	}
 	return result.String()
