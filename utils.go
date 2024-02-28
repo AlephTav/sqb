@@ -1,10 +1,5 @@
 package sqb
 
-import (
-	"reflect"
-	"testing"
-)
-
 type SliceMap []any
 
 func Map(kv ...any) SliceMap {
@@ -28,16 +23,4 @@ func Values(m SliceMap) []any {
 		values = append(values, m[i+1])
 	}
 	return values
-}
-
-func CheckSql(t *testing.T, expected string, actual string) {
-	if expected != actual {
-		t.Errorf("Expected SQL is %q, actual is %q", expected, actual)
-	}
-}
-
-func CheckParams(t *testing.T, expected map[string]any, actual map[string]any) {
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("Expected SQL params are %#v, actual is %#v", expected, actual)
-	}
 }

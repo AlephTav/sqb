@@ -3,6 +3,7 @@ package postgresql
 import (
 	"github.com/AlephTav/sqb"
 	sql "github.com/AlephTav/sqb/sql/expression"
+	"reflect"
 	"testing"
 )
 
@@ -1130,6 +1131,274 @@ func TestSelectStmt_Clean(t *testing.T) {
 
 	sqb.CheckSql(t, "SELECT *", st.String())
 	sqb.CheckParams(t, map[string]any{}, st.Params())
+}
+
+//endregion
+
+//region Statement Execution
+
+func TestSelectStmt_PairsWithNonExistentKeyOfKey(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	_, err := st.Pairs("c4", "c1")
+
+	actualError := "key \"c4\" is not found in the row set"
+	if err == nil || err.Error() != actualError {
+		t.Errorf("Expected error is %q, %q given", actualError, err)
+	}
+}
+
+func TestSelectStmt_PairsWithNonExistentKeyOfValue(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	_, err := st.Pairs("c1", "c4")
+
+	actualError := "key \"c4\" is not found in the row set"
+	if err == nil || err.Error() != actualError {
+		t.Errorf("Pairs() must throw error %q, but %q given", actualError, err)
+	}
+}
+
+func TestSelectStmt_Pairs(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	items := []struct {
+		key   string
+		value string
+		pairs map[any]any
+	}{
+		{
+			"c1", "c2", map[any]any{"v1": "v2", "v3": "v4", "v5": "v6"},
+		},
+		{
+			"c2", "c1", map[any]any{"v2": "v1", "v4": "v3", "v6": "v5"},
+		},
+		{
+			"c3", "c1", map[any]any{"a": "v1", "b": "v5"},
+		},
+	}
+	for _, item := range items {
+		pairs, err := st.Pairs(item.key, item.value)
+		if err != nil {
+			t.Errorf("Pairs() is failed: %s", err)
+		}
+		if !reflect.DeepEqual(item.pairs, pairs) {
+			t.Errorf("Pairs() must return %#v, %#v received", item.pairs, pairs)
+		}
+	}
+}
+
+func TestSelectStmt_RowsByKeyWithNonExistentKey(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	_, err := st.RowsByKey("c4", false)
+
+	actualError := "key \"c4\" is not found in the row set"
+	if err == nil || err.Error() != actualError {
+		t.Errorf("RowsByKey() must throw error %q, but %q given", actualError, err)
+	}
+}
+
+func TestSelectStmt_RowsByKey(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	items := []struct {
+		key    string
+		remove bool
+		rows   map[any]map[string]any
+	}{
+		{
+			"c2",
+			false,
+			map[any]map[string]any{
+				"v2": {"c1": "v1", "c2": "v2", "c3": "a"},
+				"v4": {"c1": "v3", "c2": "v4", "c3": "b"},
+				"v6": {"c1": "v5", "c2": "v6", "c3": "b"},
+			},
+		},
+		{
+			"c3",
+			false,
+			map[any]map[string]any{
+				"a": {"c1": "v1", "c2": "v2", "c3": "a"},
+				"b": {"c1": "v5", "c2": "v6", "c3": "b"},
+			},
+		},
+		{
+			"c1",
+			true,
+			map[any]map[string]any{
+				"v1": {"c2": "v2", "c3": "a"},
+				"v3": {"c2": "v4", "c3": "b"},
+				"v5": {"c2": "v6", "c3": "b"},
+			},
+		},
+		{
+			"c3",
+			true,
+			map[any]map[string]any{
+				"a": {"c1": "v1", "c2": "v2"},
+				"b": {"c1": "v5", "c2": "v6"},
+			},
+		},
+	}
+	for _, item := range items {
+		rows, err := st.RowsByKey(item.key, item.remove)
+		if err != nil {
+			t.Errorf("RowsByKey() is failed: %s", err)
+		}
+		if !reflect.DeepEqual(item.rows, rows) {
+			t.Errorf("RowsByKey() must return %#v, %#v received", item.rows, rows)
+		}
+	}
+}
+
+func TestSelectStmt_RowsByGroupWithNonExistentKey(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	_, err := st.RowsByGroup("c4", false)
+
+	actualError := "key \"c4\" is not found in the row set"
+	if err == nil || err.Error() != actualError {
+		t.Errorf("RowsByGroup() must throw error %q, but %q given", actualError, err)
+	}
+}
+
+func TestSelectStmt_RowsByGroup(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	items := []struct {
+		key    string
+		remove bool
+		rows   map[any][]map[string]any
+	}{
+		{
+			"c2",
+			false,
+			map[any][]map[string]any{
+				"v2": {
+					{"c1": "v1", "c2": "v2", "c3": "a"},
+				},
+				"v4": {
+					{"c1": "v3", "c2": "v4", "c3": "b"},
+				},
+				"v6": {
+					{"c1": "v5", "c2": "v6", "c3": "b"},
+				},
+			},
+		},
+		{
+			"c3",
+			false,
+			map[any][]map[string]any{
+				"a": {
+					{"c1": "v1", "c2": "v2", "c3": "a"},
+				},
+				"b": {
+					{"c1": "v3", "c2": "v4", "c3": "b"},
+					{"c1": "v5", "c2": "v6", "c3": "b"},
+				},
+			},
+		},
+		{
+			"c2",
+			true,
+			map[any][]map[string]any{
+				"v2": {
+					{"c1": "v1", "c3": "a"},
+				},
+				"v4": {
+					{"c1": "v3", "c3": "b"},
+				},
+				"v6": {
+					{"c1": "v5", "c3": "b"},
+				},
+			},
+		},
+		{
+			"c3",
+			true,
+			map[any][]map[string]any{
+				"a": {
+					{"c1": "v1", "c2": "v2"},
+				},
+				"b": {
+					{"c1": "v3", "c2": "v4"},
+					{"c1": "v5", "c2": "v6"},
+				},
+			},
+		},
+	}
+	for _, item := range items {
+		rows, err := st.RowsByGroup(item.key, item.remove)
+		if err != nil {
+			t.Errorf("RowsByGroup() is failed: %s", err)
+		}
+		if !reflect.DeepEqual(item.rows, rows) {
+			t.Errorf("RowsByGroup() must return %#v, %#v received", item.rows, rows)
+		}
+	}
+}
+
+func TestSelectStmt_Pages(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	expected := []map[string]any{
+		{"c1": "v1", "c2": "v2", "c3": "a"},
+		{"c1": "v3", "c2": "v4", "c3": "b"},
+		{"c1": "v5", "c2": "v6", "c3": "b"},
+	}
+	for page := 0; page < 2; page++ {
+		nextRow := st.Pages(2, page)
+		i := 2 * page
+		for {
+			row, err := nextRow()
+			if err != nil {
+				t.Errorf("Pages(2, %d) is failed on iteration #%d: %s", page, i+1, err)
+			}
+			if row == nil {
+				break
+			}
+			if !reflect.DeepEqual(row, expected[i]) {
+				t.Errorf(
+					"Pages(2, %d) on iteration #%d must return %#v, but %#v received",
+					page,
+					i+1,
+					expected[i],
+					row,
+				)
+			}
+			i++
+		}
+	}
+}
+
+func TestSelectStmt_Batches(t *testing.T) {
+	st := NewSelectStmt(sqb.NewStatementExecutorMock())
+	expected := [][]map[string]any{
+		{
+			{"c1": "v1", "c2": "v2", "c3": "a"},
+			{"c1": "v3", "c2": "v4", "c3": "b"},
+		},
+		{
+			{"c1": "v5", "c2": "v6", "c3": "b"},
+		},
+	}
+	for page := 0; page < 2; page++ {
+		nextRow := st.Batches(2, page)
+		i := page
+		for {
+			rows, err := nextRow()
+			if err != nil {
+				t.Errorf("Batches(2, %d) is failed on iteration #%d: %s", page, i+1, err)
+			}
+			if rows == nil {
+				break
+			}
+			if !reflect.DeepEqual(rows, expected[i]) {
+				t.Errorf(
+					"Batches(2, %d) on iteration #%d must return %#v, but %#v received",
+					page,
+					i+1,
+					expected[i],
+					rows,
+				)
+			}
+			i++
+		}
+	}
 }
 
 //endregion

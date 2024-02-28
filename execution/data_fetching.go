@@ -23,10 +23,10 @@ func (d *DataFetching[T]) Pairs(keyKey, valueKey string) (map[any]any, error) {
 		return pairs, nil
 	}
 	if _, exists := rows[0][keyKey]; !exists {
-		return pairs, fmt.Errorf("key %q is not found the result set", keyKey)
+		return pairs, fmt.Errorf("key %q is not found in the row set", keyKey)
 	}
 	if _, exists := rows[0][valueKey]; !exists {
-		return pairs, fmt.Errorf("key %q is not found the result set", valueKey)
+		return pairs, fmt.Errorf("key %q is not found in the row set", valueKey)
 	}
 	for _, row := range rows {
 		pairs[row[keyKey]] = row[valueKey]
@@ -34,17 +34,17 @@ func (d *DataFetching[T]) Pairs(keyKey, valueKey string) (map[any]any, error) {
 	return pairs, nil
 }
 
-func (d *DataFetching[T]) RowsByKey(key string, removeKeyFromRow bool) (map[any]any, error) {
+func (d *DataFetching[T]) RowsByKey(key string, removeKeyFromRow bool) (map[any]map[string]any, error) {
 	rows, err := d.Rows()
 	if err != nil {
 		return nil, err
 	}
-	result := make(map[any]any)
+	result := make(map[any]map[string]any)
 	if len(rows) == 0 {
 		return result, nil
 	}
 	if _, exists := rows[0][key]; !exists {
-		return result, fmt.Errorf("key %q is not found the result set", key)
+		return result, fmt.Errorf("key %q is not found in the row set", key)
 	}
 	for _, row := range rows {
 		k := row[key]
@@ -66,7 +66,7 @@ func (d *DataFetching[T]) RowsByGroup(key string, removeKeyFromRow bool) (map[an
 		return result, nil
 	}
 	if _, exists := rows[0][key]; !exists {
-		return result, fmt.Errorf("key %q is not found the result set", key)
+		return result, fmt.Errorf("key %q is not found in the row set", key)
 	}
 	for _, row := range rows {
 		k := row[key]

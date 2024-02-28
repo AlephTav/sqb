@@ -136,24 +136,21 @@ func (s *SelectStmt) Pages(size, page int) func() (map[string]any, error) {
 
 func (s *SelectStmt) Batches(size, page int) func() ([]map[string]any, error) {
 	var err error
-	var count = -1
+	var count = size
 	var rows []map[string]any
 	return func() ([]map[string]any, error) {
 		for {
-			if count < 0 {
-				if rows, err = s.Paginate(page, size).Rows(); err != nil {
-					return nil, err
-				}
-				count = len(rows)
-			}
-			if count > 0 {
-				return rows, nil
-			}
 			if count < size {
 				return nil, nil
 			}
-			count = -1
-			page++
+			if rows, err = s.Paginate(page, size).Rows(); err != nil {
+				return nil, err
+			}
+			count = len(rows)
+			if count > 0 {
+				page++
+				return rows, nil
+			}
 		}
 	}
 }
