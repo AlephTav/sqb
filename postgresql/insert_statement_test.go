@@ -216,6 +216,7 @@ func TestInsertStmt_InsertFromQuery(t *testing.T) {
 				Select([]any{"t2.c1", "t2.c2", "t3.c3"}).
 				Where("t2.c1", "=", 123),
 		)
+
 	sqb.CheckSql(t, "INSERT INTO t1 (t1.c1, t1.c2, t1.c3) SELECT t2.c1, t2.c2, t3.c3 FROM t2 WHERE t2.c1 = :p1", st.String())
 	sqb.CheckParams(t, map[string]any{"p1": 123}, st.Params())
 }
@@ -430,7 +431,6 @@ func TestInsertStmt_ReturningColumnListWithAliases(t *testing.T) {
 
 	sqb.CheckSql(t, "INSERT INTO tb (c1) VALUES (:p1) RETURNING c1 a, c2 b, c3 c", st.String())
 	sqb.CheckParams(t, map[string]any{"p1": "v1"}, st.Params())
-
 }
 
 func TestInsertStmt_ReturningQueryWithAlias(t *testing.T) {
