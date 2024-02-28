@@ -13,6 +13,7 @@ type ConflictClause[T sqb.Statement[T]] struct {
 	assignmentPredicate    sql.ConditionalExpression
 	indexConstraint        string
 	whereBelongsToConflict bool
+	used                   bool
 }
 
 func NewConflictClause[T sqb.Statement[T]](self T) *ConflictClause[T] {
@@ -23,6 +24,7 @@ func NewConflictClause[T sqb.Statement[T]](self T) *ConflictClause[T] {
 		sql.EmptyAssignmentExp(),
 		sql.EmptyCondExp(),
 		"",
+		false,
 		false,
 	}
 }
@@ -78,6 +80,8 @@ func (c *ConflictClause[T]) OnConflict(args ...any) T {
 			c.indexPredicate.Where(indexPredicate)
 		}
 	}
+	c.whereBelongsToConflict = true
+	c.used = true
 	c.self.Dirty()
 	return c.self
 }
@@ -99,6 +103,7 @@ func (c *ConflictClause[T]) DoNothing() T {
 //   - DoUpdate(column any, value any)
 func (c *ConflictClause[T]) DoUpdate(column any, args ...any) T {
 	c.assignment.Append(column, args...)
+	c.whereBelongsToConflict = false
 	c.self.Dirty()
 	return c.self
 }
@@ -107,14 +112,14 @@ func (c *ConflictClause[T]) DoUpdate(column any, args ...any) T {
 //   - DoUpdateWithCondition(column any, assignmentPredicate any)
 //   - DoUpdateWithCondition(column any, value any, assignmentPredicate any)
 func (c *ConflictClause[T]) DoUpdateWithCondition(column any, valueOrAssignmentPredicate any, args ...any) T {
-	var value, predicate any
+	var predicate any
 	if len(args) > 0 {
-		value = valueOrAssignmentPredicate
+		c.assignment.Append(column, valueOrAssignmentPredicate)
 		predicate = args[0]
 	} else {
+		c.assignment.Append(column)
 		predicate = valueOrAssignmentPredicate
 	}
-	c.assignment.Append(column, value)
 	if predicate != nil {
 		if c.assignmentPredicate.IsEmpty() {
 			if cond, ok := predicate.(sql.ConditionalExpression); ok {
@@ -186,6 +191,7 @@ func (c *ConflictClause[T]) CleanConflict() T {
 	c.assignmentPredicate.Clean()
 	c.indexConstraint = ""
 	c.whereBelongsToConflict = false
+	c.used = false
 	c.self.Dirty()
 	return c.self
 }
@@ -199,11 +205,13 @@ func (c *ConflictClause[T]) CopyConflict(self T) *ConflictClause[T] {
 		c.assignmentPredicate.Copy(),
 		c.indexConstraint,
 		c.whereBelongsToConflict,
+		c.used,
 	}
 }
 
 func (c *ConflictClause[T]) BuildConflict() T {
-	if c.indexColumn.IsEmpty() && c.indexPredicate.IsEmpty() && c.indexConstraint == "" && c.assignment.IsEmpty() {
+	if !c.used && c.indexColumn.IsEmpty() && c.indexPredicate.IsEmpty() &&
+		c.indexConstraint == "" && c.assignment.IsEmpty() {
 		return c.self
 	}
 	c.self.AddSql(" ON CONFLICT")

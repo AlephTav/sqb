@@ -5,19 +5,26 @@ import (
 	sql "github.com/AlephTav/sqb/sql/expression"
 )
 
-type ValueListClause[T sqb.ColumnsAwareStmt[T]] struct {
-	self T
-	exp  sql.ValueListExpression
+type ValueListClause[T sqb.ColumnsAwareStmt[T], Q sqb.QueryStmt[Q]] struct {
+	self  T
+	query *Q
+	exp   sql.ValueListExpression
 }
 
-func NewValueListClause[T sqb.ColumnsAwareStmt[T]](self T) *ValueListClause[T] {
-	return &ValueListClause[T]{self, sql.EmptyValueListExp()}
+func NewValueListClause[T sqb.ColumnsAwareStmt[T], Q sqb.QueryStmt[Q]](self T) *ValueListClause[T, Q] {
+	return &ValueListClause[T, Q]{self, nil, sql.EmptyValueListExp()}
+}
+
+func (v *ValueListClause[T, Q]) Select(query Q) T {
+	v.query = &query
+	v.self.Dirty()
+	return v.self
 }
 
 // Values add values and columns to the value list clause:
 // Values(values any)
 // Values(values any, columns any)
-func (v *ValueListClause[T]) Values(values any, args ...any) T {
+func (v *ValueListClause[T, Q]) Values(values any, args ...any) T {
 	if len(args) > 0 {
 		v.self.Columns(args[0])
 	} else {
@@ -38,16 +45,21 @@ func (v *ValueListClause[T]) Values(values any, args ...any) T {
 	return v.self
 }
 
-func (v *ValueListClause[T]) CleanValueList() T {
+func (v *ValueListClause[T, Q]) CleanValueList() T {
+	v.query = nil
 	v.exp.Clean()
 	v.self.Dirty()
 	return v.self
 }
 
-func (v *ValueListClause[T]) CopyValueList(self T) *ValueListClause[T] {
-	return &ValueListClause[T]{self, v.exp.Copy()}
+func (v *ValueListClause[T, Q]) CopyValueList(self T) *ValueListClause[T, Q] {
+	if v.query == nil {
+		return &ValueListClause[T, Q]{self, nil, v.exp.Copy()}
+	}
+	query := (*v.query).Copy()
+	return &ValueListClause[T, Q]{self, &query, v.exp.Copy()}
 }
 
-func (v *ValueListClause[T]) BuildValueList() (T, sql.ValueListExpression) {
-	return v.self, v.exp
+func (v *ValueListClause[T, Q]) BuildValueList() (T, *Q, sql.ValueListExpression) {
+	return v.self, v.query, v.exp
 }

@@ -33,7 +33,7 @@ func (c *ColumnsClause[T]) CopyColumns(self T) *ColumnsClause[T] {
 func (c *ColumnsClause[T]) BuildColumns() T {
 	if c.exp.IsNotEmpty() {
 		c.self.AddParams(c.exp.Params())
-		c.self.AddSql("(")
+		c.self.AddSql(" (")
 		c.self.AddSql(c.exp.String())
 		c.self.AddSql(")")
 	}

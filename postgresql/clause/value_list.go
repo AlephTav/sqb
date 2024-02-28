@@ -5,21 +5,25 @@ import (
 	sql "github.com/AlephTav/sqb/sql/clause"
 )
 
-type ValueListClause[T sqb.ColumnsAwareStmt[T]] struct {
-	*sql.ValueListClause[T]
+type ValueListClause[T sqb.ColumnsAwareStmt[T], Q sqb.QueryStmt[Q]] struct {
+	*sql.ValueListClause[T, Q]
 }
 
-func NewValueListClause[T sqb.ColumnsAwareStmt[T]](self T) *ValueListClause[T] {
-	return &ValueListClause[T]{sql.NewValueListClause[T](self)}
+func NewValueListClause[T sqb.ColumnsAwareStmt[T], Q sqb.QueryStmt[Q]](self T) *ValueListClause[T, Q] {
+	return &ValueListClause[T, Q]{sql.NewValueListClause[T, Q](self)}
 }
 
-func (v *ValueListClause[T]) CopyValueList(self T) *ValueListClause[T] {
-	return &ValueListClause[T]{v.ValueListClause.CopyValueList(self)}
+func (v *ValueListClause[T, Q]) CopyValueList(self T) *ValueListClause[T, Q] {
+	return &ValueListClause[T, Q]{v.ValueListClause.CopyValueList(self)}
 }
 
-func (v *ValueListClause[T]) BuildValueList() T {
-	self, exp := v.ValueListClause.BuildValueList()
-	if exp.IsEmpty() {
+func (v *ValueListClause[T, Q]) BuildValueList() T {
+	self, query, exp := v.ValueListClause.BuildValueList()
+	if query != nil {
+		self.AddParams((*query).Params())
+		self.AddSql(" ")
+		self.AddSql((*query).String())
+	} else if exp.IsEmpty() {
 		self.AddSql(" DEFAULT VALUES")
 	} else {
 		self.AddParams(exp.Params())
