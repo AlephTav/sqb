@@ -2,12 +2,14 @@ package postgresql
 
 import (
 	"github.com/AlephTav/sqb"
+	"github.com/AlephTav/sqb/execution"
 	postgresql "github.com/AlephTav/sqb/postgresql/clause"
 	"github.com/AlephTav/sqb/sql"
 	cls "github.com/AlephTav/sqb/sql/clause"
 )
 
 type InsertStmt struct {
+	*execution.DataFetching[*InsertStmt]
 	*sql.BaseStatement[*InsertStmt]
 	*cls.WithClause[*InsertStmt]
 	*postgresql.InsertClause[*InsertStmt]
@@ -19,6 +21,7 @@ type InsertStmt struct {
 
 func NewInsertStmt(db sqb.StatementExecutor) *InsertStmt {
 	st := &InsertStmt{}
+	st.DataFetching = execution.NewDataFetching[*InsertStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*InsertStmt](st, db)
 	st.WithClause = cls.NewWithClause[*InsertStmt](st)
 	st.InsertClause = postgresql.NewInsertClause[*InsertStmt](st)
@@ -49,6 +52,7 @@ func (s *InsertStmt) Copy() *InsertStmt {
 	st.ValueListClause = s.CopyValueList(st)
 	st.ConflictClause = s.CopyConflict(st)
 	st.ReturningClause = s.CopyReturning(st)
+	st.DataFetching = execution.NewDataFetching[*InsertStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*InsertStmt](st, s.Executor())
 	return st
 }
@@ -66,4 +70,8 @@ func (s *InsertStmt) Build() *InsertStmt {
 	s.BuildReturning()
 	s.Built()
 	return s
+}
+
+func (s *InsertStmt) Exec(sequence string) (any, error) {
+	return s.Executor().Insert(s.String(), s.Params(), sequence)
 }

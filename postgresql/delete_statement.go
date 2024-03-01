@@ -10,6 +10,7 @@ import (
 
 type DeleteStmt struct {
 	*execution.DataFetching[*DeleteStmt]
+	*execution.StatementExecution[*DeleteStmt]
 	*sql.BaseStatement[*DeleteStmt]
 	*cls.WithClause[*DeleteStmt]
 	*postgresql.DeleteClause[*DeleteStmt]
@@ -21,6 +22,7 @@ type DeleteStmt struct {
 func NewDeleteStmt(db sqb.StatementExecutor) *DeleteStmt {
 	st := &DeleteStmt{}
 	st.DataFetching = execution.NewDataFetching[*DeleteStmt](st)
+	st.StatementExecution = execution.NewStatementExecution[*DeleteStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*DeleteStmt](st, db)
 	st.WithClause = cls.NewWithClause[*DeleteStmt](st)
 	st.DeleteClause = postgresql.NewDeleteClause[*DeleteStmt](st)
@@ -49,6 +51,7 @@ func (s *DeleteStmt) Copy() *DeleteStmt {
 	st.WhereClause = s.CopyWhere(st)
 	st.ReturningClause = s.CopyReturning(st)
 	st.DataFetching = execution.NewDataFetching[*DeleteStmt](st)
+	st.StatementExecution = execution.NewStatementExecution[*DeleteStmt](st)
 	st.BaseStatement = sql.NewBaseStatement[*DeleteStmt](st, s.Executor())
 	return st
 }
