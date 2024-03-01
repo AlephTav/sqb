@@ -1,7 +1,7 @@
 package sqb
 
 type StatementExecutor interface {
-	Exec(sql string, params map[string]any) (int, error)
+	Exec(sql string, params map[string]any) (int64, error)
 	Insert(sql string, params map[string]any, sequence string) (any, error)
 	Rows(sql string, params map[string]any) ([]map[string]any, error)
 	Row(sql string, params map[string]any) (map[string]any, error)

@@ -84,7 +84,7 @@ func (s *SelectStmt) One(args ...string) (any, error) {
 	return result, err
 }
 
-func (s *SelectStmt) Count(column string) (int, error) {
+func (s *SelectStmt) Count(column string) (int64, error) {
 	prevLimit := s.LimitClause
 	prevOffset := s.OffsetClause
 	prevOrder := s.OrderClause
@@ -101,12 +101,12 @@ func (s *SelectStmt) Count(column string) (int, error) {
 	return result, err
 }
 
-func (s *SelectStmt) CountWithNonConditionalClauses(column string) (int, error) {
-	result, err := s.One("COUNT(" + column + ")")
+func (s *SelectStmt) CountWithNonConditionalClauses(column string) (int64, error) {
+	cnt, err := s.One("COUNT(" + column + ")")
 	if err != nil {
-		return result.(int), err
+		return 0, err
 	}
-	return 0, err
+	return sqb.ToInt64(cnt)
 }
 
 func (s *SelectStmt) Pages(size, page int) func() (map[string]any, error) {

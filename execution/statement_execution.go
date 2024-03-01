@@ -10,6 +10,6 @@ func NewStatementExecution[T sqb.Statement[T]](self T) *StatementExecution[T] {
 	return &StatementExecution[T]{self}
 }
 
-func (s *StatementExecution[T]) Exec() (int, error) {
+func (s *StatementExecution[T]) Exec() (int64, error) {
 	return s.self.Executor().Exec(s.self.String(), s.self.Params())
 }

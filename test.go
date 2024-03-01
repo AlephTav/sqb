@@ -51,8 +51,8 @@ func (m *StatementExecutorMock) rows(sql string) []map[string]any {
 	}[offset:top]
 }
 
-func (m *StatementExecutorMock) Exec(sql string, params map[string]any) (int, error) {
-	return len(m.rows(sql)), nil
+func (m *StatementExecutorMock) Exec(sql string, params map[string]any) (int64, error) {
+	return int64(len(m.rows(sql))), nil
 }
 
 func (m *StatementExecutorMock) Insert(sql string, params map[string]any, sequence string) (any, error) {
