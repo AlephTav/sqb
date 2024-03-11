@@ -28,7 +28,14 @@ func (v *ValueListClause[T, Q]) Values(values any, args ...any) T {
 	if len(args) > 0 {
 		v.self.Columns(args[0])
 	} else {
+	separate:
 		switch values.(type) {
+		case map[string]any:
+			values = sqb.ToSliceMap[string, any](values.(map[string]any))
+			break separate
+		case []map[string]any:
+			values = sqb.ToSliceMapSlice[string, any](values.([]map[string]any))
+			break separate
 		case sqb.SliceMap:
 			v.self.Columns(sqb.Keys(values.(sqb.SliceMap)))
 		case []any:

@@ -4,6 +4,26 @@ import "fmt"
 
 type SliceMap []any
 
+func ToSliceMap[K comparable, V any](values map[K]V) SliceMap {
+	sm := make([]any, len(values))
+	i := 0
+	for k, v := range values {
+		sm[i] = k
+		i++
+		sm[i] = v
+		i++
+	}
+	return sm
+}
+
+func ToSliceMapSlice[K comparable, V any](values []map[K]V) []SliceMap {
+	lst := make([]SliceMap, len(values))
+	for i, mp := range values {
+		lst[i] = ToSliceMap[K, V](mp)
+	}
+	return lst
+}
+
 func Map(kv ...any) SliceMap {
 	if len(kv)&1 != 0 {
 		kv = append(kv, nil)
@@ -23,6 +43,22 @@ func Values(m SliceMap) []any {
 	values := make([]any, 0, len(m)/2)
 	for i, count := 0, len(m); i < count; i += 2 {
 		values = append(values, m[i+1])
+	}
+	return values
+}
+
+func MapKeys(m map[string]any) []string {
+	keys := make([]string, 0, len(m))
+	for k := range m {
+		keys = append(keys, k)
+	}
+	return keys
+}
+
+func MapValues(m map[string]any) []any {
+	values := make([]any, 0, len(m))
+	for _, v := range m {
+		values = append(values, v)
 	}
 	return values
 }

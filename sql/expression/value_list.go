@@ -42,14 +42,20 @@ func (e ValueListExpression) valueListToString(exp any) string {
 		return e.queryToString(exp.(sqb.Query))
 	case []any:
 		return e.sliceToString(exp.([]any))
+	case map[string]any:
+		return e.mapToString(exp.(map[string]any))
 	case sqb.SliceMap:
-		return e.mapToString(exp.(sqb.SliceMap))
+		return e.sliceMapToString(exp.(sqb.SliceMap))
 	default:
 		return fmt.Sprintf("%s", exp)
 	}
 }
 
-func (e ValueListExpression) mapToString(exp sqb.SliceMap) string {
+func (e ValueListExpression) mapToString(exp map[string]any) string {
+	return e.sliceToString(sqb.MapValues(exp))
+}
+
+func (e ValueListExpression) sliceMapToString(exp sqb.SliceMap) string {
 	return e.sliceToString(sqb.Values(exp))
 }
 
@@ -60,7 +66,7 @@ func (e ValueListExpression) sliceToString(exp []any) string {
 	var separator string
 	var result strings.Builder
 	switch exp[0].(type) {
-	case []any, sqb.SliceMap:
+	case []any, map[string]any, sqb.SliceMap:
 		for _, value := range exp {
 			result.WriteString(separator)
 			result.WriteString(e.valueListToString(value))
@@ -88,18 +94,20 @@ func (e ValueListExpression) valueToString(exp any) string {
 		return e.queryToString(exp.(sqb.Query))
 	case []any:
 		return e.sliceOfValuesToString(exp.([]any))
+	case map[string]any:
+		return e.mapOfValuesToString(exp.(map[string]any))
 	case sqb.SliceMap:
-		return e.mapOfValuesToString(exp.(sqb.SliceMap))
+		return e.sliceMapOfValuesToString(exp.(sqb.SliceMap))
 	}
 	return e.nextParameterName(exp)
 }
 
-func (e ValueListExpression) mapOfValuesToString(exp sqb.SliceMap) string {
-	values := make([]any, 0, len(exp))
-	for i, count := 0, len(exp); i < count; i += 2 {
-		values = append(values, exp[i+1])
-	}
-	return e.sliceOfValuesToString(values)
+func (e ValueListExpression) mapOfValuesToString(exp map[string]any) string {
+	return e.sliceOfValuesToString(sqb.MapValues(exp))
+}
+
+func (e ValueListExpression) sliceMapOfValuesToString(exp sqb.SliceMap) string {
+	return e.sliceOfValuesToString(sqb.Values(exp))
 }
 
 func (e ValueListExpression) sliceOfValuesToString(exp []any) string {
