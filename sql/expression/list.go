@@ -51,8 +51,10 @@ func (e ListExpression) nameToString(exp any) string {
 		return e.queryToString(exp.(sqb.Query))
 	case []any:
 		return e.sliceToString(exp.([]any))
+	case map[string]any:
+		return e.mapToString(exp.(map[string]any))
 	case sqb.SliceMap:
-		return e.mapToString(exp.(sqb.SliceMap))
+		return e.sliceMapToString(exp.(sqb.SliceMap))
 	default:
 		return fmt.Sprintf("%s", exp)
 	}
@@ -63,7 +65,17 @@ func (e ListExpression) valueListExpressionToString(exp ValueListExpression) str
 	return "(VALUES " + exp.String() + ")"
 }
 
-func (e ListExpression) mapToString(exp sqb.SliceMap) string {
+func (e ListExpression) mapToString(exp map[string]any) string {
+	var separator string
+	var result strings.Builder
+	for k, v := range exp {
+		e.addToResult(k, v, separator, &result)
+		separator = ", "
+	}
+	return result.String()
+}
+
+func (e ListExpression) sliceMapToString(exp sqb.SliceMap) string {
 	var separator string
 	var result strings.Builder
 	for i, count := 0, len(exp); i < count; i += 2 {
