@@ -52,7 +52,7 @@ func (e ValueListExpression) valueListToString(exp any) string {
 }
 
 func (e ValueListExpression) mapToString(exp map[string]any) string {
-	return e.sliceToString(sqb.MapValues(exp))
+	return e.sliceToString(sqb.MapValues[string, any](exp))
 }
 
 func (e ValueListExpression) sliceMapToString(exp sqb.SliceMap) string {
@@ -103,7 +103,7 @@ func (e ValueListExpression) valueToString(exp any) string {
 }
 
 func (e ValueListExpression) mapOfValuesToString(exp map[string]any) string {
-	return e.sliceOfValuesToString(sqb.MapValues(exp))
+	return e.sliceOfValuesToString(sqb.MapValues[string, any](exp))
 }
 
 func (e ValueListExpression) sliceMapOfValuesToString(exp sqb.SliceMap) string {
