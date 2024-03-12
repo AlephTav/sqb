@@ -5,7 +5,7 @@ import "fmt"
 type SliceMap []any
 
 func ToSliceMap[K comparable, V any](values map[K]V) SliceMap {
-	sm := make([]any, len(values))
+	sm := make([]any, 2*len(values))
 	i := 0
 	for k, v := range values {
 		sm[i] = k
