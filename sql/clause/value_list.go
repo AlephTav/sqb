@@ -32,10 +32,10 @@ func (v *ValueListClause[T, Q]) Values(values any, args ...any) T {
 		switch values.(type) {
 		case map[string]any:
 			values = sqb.ToSliceMap[string, any](values.(map[string]any))
-			break separate
+			goto separate
 		case []map[string]any:
 			values = sqb.ToSliceMapSlice[string, any](values.([]map[string]any))
-			break separate
+			goto separate
 		case sqb.SliceMap:
 			v.self.Columns(sqb.Keys(values.(sqb.SliceMap)))
 		case []any:

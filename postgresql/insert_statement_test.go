@@ -157,7 +157,7 @@ func TestInsertStmt_ColumnsWithSetOfValues(t *testing.T) {
 	)
 }
 
-func TestInsertStmt_ColumnsAndValuesAsSingleParameter(t *testing.T) {
+func TestInsertStmt_ValuesWithSliceMap(t *testing.T) {
 	sqb.ResetParameterIndex()
 	st := NewInsertStmt(nil).
 		Into("tb").
@@ -167,7 +167,34 @@ func TestInsertStmt_ColumnsAndValuesAsSingleParameter(t *testing.T) {
 	sqb.CheckParams(t, map[string]any{"p1": "v1", "p2": "v2", "p3": "v3"}, st.Params())
 }
 
-func TestInsertStmt_ColumnsAndSetOfValuesAsSingleParameter(t *testing.T) {
+func TestInsertStmt_ValuesWithMap(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewInsertStmt(nil).
+		Into("tb").
+		Values(map[string]any{
+			"c1": "v1",
+			"c2": "v2",
+		})
+
+	sqb.CheckSql(
+		t,
+		[]string{
+			"INSERT INTO tb (c1, c2) VALUES (:p1, :p2)",
+			"INSERT INTO tb (c2, c1) VALUES (:p1, :p2)",
+		},
+		st.String(),
+	)
+	sqb.CheckParams(
+		t,
+		[]map[string]any{
+			{"p1": "v1", "p2": "v2"},
+			{"p1": "v2", "p2": "v1"},
+		},
+		st.Params(),
+	)
+}
+
+func TestInsertStmt_ValuesWithSliceOfSliceMaps(t *testing.T) {
 	sqb.ResetParameterIndex()
 	st := NewInsertStmt(nil).
 		Into("tb").
@@ -189,6 +216,28 @@ func TestInsertStmt_ColumnsAndSetOfValuesAsSingleParameter(t *testing.T) {
 		map[string]any{"p1": "v1", "p2": "v2", "p3": "v3", "p4": "v4", "p5": "v5", "p6": "v6", "p7": "v7"},
 		st.Params(),
 	)
+}
+
+func TestInsertStmt_ValuesWithSliceOfMaps(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewInsertStmt(nil).
+		Into("tb").
+		Values(
+			[]map[string]any{
+				{"c1": "v1", "c2": nil},
+				{"c1": "v2", "c2": sql.NewExp("DEFAULT")},
+			},
+		)
+
+	sqb.CheckSql(
+		t,
+		[]string{
+			"INSERT INTO tb (c1, c2) VALUES (:p1, NULL), (:p2, DEFAULT)",
+			"INSERT INTO tb (c2, c1) VALUES (NULL, :p1), (DEFAULT, :p2)",
+		},
+		st.String(),
+	)
+	sqb.CheckParams(t, map[string]any{"p1": "v1", "p2": "v2"}, st.Params())
 }
 
 func TestInsertStmt_ValuesWithoutColumns(t *testing.T) {

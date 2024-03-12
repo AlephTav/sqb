@@ -3,19 +3,37 @@ package sqb
 import (
 	"reflect"
 	"regexp"
+	"slices"
 	"strconv"
 	"testing"
 )
 
-func CheckSql(t *testing.T, expected string, actual string) {
-	if expected != actual {
-		t.Errorf("Expected SQL is %q, actual is %q", expected, actual)
+func CheckSql(t *testing.T, expected any, actual string) {
+	switch expected.(type) {
+	case string:
+		if expected != actual {
+			t.Errorf("Expected SQL is %q, actual is %q", expected, actual)
+		}
+	default:
+		if !slices.Contains[[]string, string](expected.([]string), actual) {
+			t.Errorf("Expected SQL is %q, actual is %q", expected.([]string)[0], actual)
+		}
 	}
 }
 
-func CheckParams(t *testing.T, expected map[string]any, actual map[string]any) {
-	if !reflect.DeepEqual(expected, actual) {
-		t.Errorf("Expected SQL params are %#v, actual is %#v", expected, actual)
+func CheckParams(t *testing.T, expected any, actual map[string]any) {
+	switch expected.(type) {
+	case map[string]any:
+		if !reflect.DeepEqual(expected, actual) {
+			t.Errorf("Expected SQL params are %#v, actual is %#v", expected, actual)
+		}
+	default:
+		for _, exp := range expected.([]map[string]any) {
+			if reflect.DeepEqual(exp, actual) {
+				return
+			}
+		}
+		t.Errorf("Expected SQL params are %#v, actual is %#v", expected.([]map[string]any)[0], actual)
 	}
 }
 

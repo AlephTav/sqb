@@ -18,8 +18,20 @@ func ToSliceMap[K comparable, V any](values map[K]V) SliceMap {
 
 func ToSliceMapSlice[K comparable, V any](values []map[K]V) []any {
 	lst := make([]any, len(values))
+	if len(lst) == 0 {
+		return lst
+	}
+	keys := MapKeys[K, V](values[0])
 	for i, mp := range values {
-		lst[i] = ToSliceMap[K, V](mp)
+		j := 0
+		sm := make([]any, 2*len(mp))
+		for _, k := range keys {
+			sm[j] = k
+			j++
+			sm[j] = mp[k]
+			j++
+		}
+		lst[i] = SliceMap(sm)
 	}
 	return lst
 }
@@ -47,16 +59,16 @@ func Values(m SliceMap) []any {
 	return values
 }
 
-func MapKeys(m map[string]any) []string {
-	keys := make([]string, 0, len(m))
+func MapKeys[K comparable, V any](m map[K]V) []K {
+	keys := make([]K, 0, len(m))
 	for k := range m {
 		keys = append(keys, k)
 	}
 	return keys
 }
 
-func MapValues(m map[string]any) []any {
-	values := make([]any, 0, len(m))
+func MapValues[K comparable, V any](m map[K]V) []V {
+	values := make([]V, 0, len(m))
 	for _, v := range m {
 		values = append(values, v)
 	}
