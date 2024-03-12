@@ -16,8 +16,8 @@ func ToSliceMap[K comparable, V any](values map[K]V) SliceMap {
 	return sm
 }
 
-func ToSliceMapSlice[K comparable, V any](values []map[K]V) []SliceMap {
-	lst := make([]SliceMap, len(values))
+func ToSliceMapSlice[K comparable, V any](values []map[K]V) []any {
+	lst := make([]any, len(values))
 	for i, mp := range values {
 		lst[i] = ToSliceMap[K, V](mp)
 	}
