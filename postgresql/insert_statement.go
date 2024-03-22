@@ -72,6 +72,10 @@ func (s *InsertStmt) Build() *InsertStmt {
 	return s
 }
 
+func (s *InsertStmt) MustExec(sequence string) any {
+	return s.Executor().MustInsert(s.String(), s.Params(), sequence)
+}
+
 func (s *InsertStmt) Exec(sequence string) (any, error) {
 	return s.Executor().Insert(s.String(), s.Params(), sequence)
 }

@@ -69,30 +69,54 @@ func (m *StatementExecutorMock) rows(sql string) []map[string]any {
 	}[offset:top]
 }
 
+func (m *StatementExecutorMock) MustExec(sql string, params map[string]any) int64 {
+	return int64(len(m.rows(sql)))
+}
+
 func (m *StatementExecutorMock) Exec(sql string, params map[string]any) (int64, error) {
-	return int64(len(m.rows(sql))), nil
+	return m.MustExec(sql, params), nil
+}
+
+func (m *StatementExecutorMock) MustInsert(sql string, params map[string]any, sequence string) any {
+	return 1
 }
 
 func (m *StatementExecutorMock) Insert(sql string, params map[string]any, sequence string) (any, error) {
 	return 1, nil
 }
 
+func (m *StatementExecutorMock) MustRows(sql string, params map[string]any) []map[string]any {
+	return m.rows(sql)
+}
+
 func (m *StatementExecutorMock) Rows(sql string, params map[string]any) ([]map[string]any, error) {
-	return m.rows(sql), nil
+	return m.MustRows(sql, params), nil
+}
+
+func (m *StatementExecutorMock) MustRow(sql string, params map[string]any) map[string]any {
+	return m.rows(sql)[0]
 }
 
 func (m *StatementExecutorMock) Row(sql string, params map[string]any) (map[string]any, error) {
-	return m.rows(sql)[0], nil
+	return m.MustRow(sql, params), nil
 }
 
-func (m *StatementExecutorMock) Column(sql string, params map[string]any) ([]any, error) {
+func (m *StatementExecutorMock) MustColumn(sql string, params map[string]any) []any {
 	values := make([]any, 0, 3)
 	for _, row := range m.rows(sql) {
 		values = append(values, row["c1"])
 	}
-	return values, nil
+	return values
+}
+
+func (m *StatementExecutorMock) Column(sql string, params map[string]any) ([]any, error) {
+	return m.MustColumn(sql, params), nil
+}
+
+func (m *StatementExecutorMock) MustOne(sql string, params map[string]any) any {
+	return m.rows(sql)[0]["c1"]
 }
 
 func (m *StatementExecutorMock) One(sql string, params map[string]any) (any, error) {
-	return m.rows(sql)[0]["c1"], nil
+	return m.MustOne(sql, params), nil
 }
