@@ -52,6 +52,14 @@ func (s *SelectStmt) Paginate(page, size int) *SelectStmt {
 	return s
 }
 
+func (s *SelectStmt) MustColumn(args ...string) []any {
+	r, err := s.Column(args...)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
 func (s *SelectStmt) Column(args ...string) ([]any, error) {
 	if len(args) == 0 || args[0] == "" {
 		return s.DataFetching.Column()
@@ -66,6 +74,14 @@ func (s *SelectStmt) Column(args ...string) ([]any, error) {
 		s.Dirty()
 	}
 	return result, err
+}
+
+func (s *SelectStmt) MustOne(args ...string) any {
+	r, err := s.One(args...)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }
 
 func (s *SelectStmt) One(args ...string) (any, error) {
@@ -84,6 +100,14 @@ func (s *SelectStmt) One(args ...string) (any, error) {
 	return result, err
 }
 
+func (s *SelectStmt) MustCount(column string) int64 {
+	r, err := s.Count(column)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
 func (s *SelectStmt) Count(column string) (int64, error) {
 	prevLimit := s.LimitClause
 	prevOffset := s.OffsetClause
@@ -99,6 +123,14 @@ func (s *SelectStmt) Count(column string) (int64, error) {
 	s.OrderClause = prevOrder
 	s.GroupClause = prevGroup
 	return result, err
+}
+
+func (s *SelectStmt) MustCountWithNonConditionalClauses(column string) int64 {
+	r, err := s.CountWithNonConditionalClauses(column)
+	if err != nil {
+		panic(err)
+	}
+	return r
 }
 
 func (s *SelectStmt) CountWithNonConditionalClauses(column string) (int64, error) {
