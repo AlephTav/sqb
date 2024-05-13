@@ -17,6 +17,7 @@ func TestInsertStmt_EmptyInsert(t *testing.T) {
 //region TABLE
 
 func TestInsertStmt_IntoTable(t *testing.T) {
+	sqb.ResetParameterIndex()
 	st := NewInsertStmt(nil).
 		Into("tb").
 		Values(sqb.Map("col", "val"))

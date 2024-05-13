@@ -216,6 +216,7 @@ func TestSelectStmt_SelectFromQueryWithAlias(t *testing.T) {
 }
 
 func TestSelectStmt_SelectFromMixedSources(t *testing.T) {
+	sqb.ResetParameterIndex()
 	st := NewSelectStmt(nil).
 		Select(sqb.Map(
 			"a1", NewSelectStmt(nil).From("t2"),

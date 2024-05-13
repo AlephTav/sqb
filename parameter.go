@@ -2,15 +2,18 @@ package sqb
 
 import (
 	"strconv"
+	"sync/atomic"
 )
 
-var parameterIndex = 0
+var parameterIndex atomic.Int64
 
 func NextParameterName() string {
-	parameterIndex++
-	return "p" + strconv.Itoa(parameterIndex)
+	parameterIndex.Add(1)
+	return "p" + strconv.FormatInt(parameterIndex.Load(), 10)
 }
 
 func ResetParameterIndex() {
-	parameterIndex = 0
+	for parameterIndex.Load() != 0 {	
+		parameterIndex.Add(-parameterIndex.Load())
+	}
 }
