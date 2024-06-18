@@ -6,12 +6,13 @@ import (
 )
 
 type GroupClause[T sqb.Statement[T]] struct {
-	self T
-	exp  sql.ReversedListExpression
+	self   T
+	exp    sql.ReversedListExpression
+	rollup bool
 }
 
 func NewGroupClause[T sqb.Statement[T]](self T) *GroupClause[T] {
-	return &GroupClause[T]{self, sql.EmptyReversedListExp()}
+	return &GroupClause[T]{self, sql.EmptyReversedListExp(), false}
 }
 
 // GroupBy adds column name and its order to the group clause:
@@ -30,13 +31,20 @@ func (g *GroupClause[T]) CleanGroup() T {
 }
 
 func (g *GroupClause[T]) CopyGroup(self T) *GroupClause[T] {
-	return &GroupClause[T]{self, g.exp.Copy()}
+	return &GroupClause[T]{self, g.exp.Copy(), false}
 }
-
+func (f *GroupClause[T]) Rollup() T {
+	f.rollup = true
+	f.self.Dirty()
+	return f.self
+}
 func (g *GroupClause[T]) BuildGroup() T {
 	if g.exp.IsNotEmpty() {
 		g.self.AddParams(g.exp.Params())
 		g.self.AddSql(" GROUP BY ")
+		if g.rollup {
+			g.self.AddSql(" ROLLUP")
+		}
 		g.self.AddSql(g.exp.String())
 	}
 	return g.self
