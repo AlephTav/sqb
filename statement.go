@@ -20,3 +20,14 @@ type ColumnsAwareStmt[T any] interface {
 	Statement[T]
 	Columns(columns any) T
 }
+
+type InsertStatement[T any] interface {
+	Statement[T]
+	Columns(columns any) T
+	Values(values any, args ...any) T
+}
+
+type UpdateStatement[T any] interface {
+	Statement[T]
+	Assign(column any, args ...any) T
+}

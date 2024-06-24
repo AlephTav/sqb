@@ -20,7 +20,7 @@ func (i *InsertClause[T]) CopyInsert(self T) *InsertClause[T] {
 func (i *InsertClause[T]) BuildInsert() T {
 	self, exp := i.InsertClause.BuildInsert()
 	if exp.IsEmpty() {
-		self.AddSql("INSERT INTO")
+		self.AddSql("INSERT")
 	} else {
 		self.AddParams(exp.Params())
 		self.AddSql("INSERT INTO ")
