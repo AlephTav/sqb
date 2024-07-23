@@ -535,7 +535,7 @@ func TestInsertStmt_Clean(t *testing.T) {
 		Returning([]any{"c1", "c2", "c3"}).
 		Clean()
 
-	sqb.CheckSql(t, "INSERT INTO DEFAULT VALUES", st.String())
+	sqb.CheckSql(t, "INSERT DEFAULT VALUES", st.String())
 	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
