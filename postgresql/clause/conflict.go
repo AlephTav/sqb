@@ -45,12 +45,14 @@ func (c *ConflictClause[T]) OnConflictDoNothing(args ...any) T {
 //   - OnConflictDoUpdate(indexColumn any, column any)
 //   - OnConflictDoUpdate(indexColumn any, column any, value any)
 func (c *ConflictClause[T]) OnConflictDoUpdate(indexColumn any, column any, args ...any) T {
-	var value any
-	if len(args) > 0 {
-		value = args[0]
-	}
 	c.OnConflict(indexColumn)
-	c.DoUpdate(column, value)
+
+	if len(args) > 0 {
+		c.DoUpdate(column, args[0])
+	} else {
+		c.DoUpdate(column)
+	}
+
 	return c.self
 }
 
