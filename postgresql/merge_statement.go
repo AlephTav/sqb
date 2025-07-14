@@ -17,6 +17,7 @@ type MergeStmt struct {
 	*cls.UsingClause[*MergeStmt]
 	*postgresql.OnClause[*MergeStmt]
 	*postgresql.MatchClause[*MergeStmt, *InsertStmt, *UpdateStmt]
+	*cls.ReturningClause[*MergeStmt]
 }
 
 func NewMergeStmt(db sqb.StatementExecutor) *MergeStmt {
@@ -30,6 +31,7 @@ func NewMergeStmt(db sqb.StatementExecutor) *MergeStmt {
 	st.UsingClause = cls.NewUsingClause[*MergeStmt](st)
 	st.OnClause = postgresql.NewOnClause[*MergeStmt](st)
 	st.MatchClause = postgresql.NewMatchClause[*MergeStmt, *InsertStmt, *UpdateStmt](st)
+	st.ReturningClause = cls.NewReturningClause[*MergeStmt](st)
 
 	return st
 }
@@ -44,6 +46,7 @@ func (m *MergeStmt) Build() *MergeStmt {
 	m.BuildUsing()
 	m.BuildOn()
 	m.BuildMatch()
+	m.BuildReturning()
 	m.Built()
 	return m
 }
@@ -54,6 +57,7 @@ func (m *MergeStmt) Clean() *MergeStmt {
 	m.CleanUsing()
 	m.CleanOn()
 	m.CleanMatch()
+	m.CleanReturning()
 	return m
 }
 
@@ -65,5 +69,6 @@ func (m *MergeStmt) Copy() *MergeStmt {
 	st.OnClause = m.CopyOn(st)
 	st.MatchClause = m.CopyMatch(st)
 	st.BaseStatement = sql.NewBaseStatement[*MergeStmt](st, m.Executor())
+	st.ReturningClause = m.CopyReturning(st)
 	return st
 }

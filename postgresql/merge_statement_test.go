@@ -117,5 +117,22 @@ func TestMergeStmt_Clean(t *testing.T) {
 	sqb.CheckSql(t, "MERGE ", st.String())
 	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
+func TestMergeStmt_Returning(t *testing.T) {
+	sqb.ResetParameterIndex()
+	st := NewMergeStmt(nil).
+		Into("target t").
+		Using("source s").
+		On("t.name", "=", "s.name").
+		WhenMatchedThenDelete().
+		Returning("t.*")
+
+	sqb.CheckSql(t,
+		"MERGE INTO target t "+
+			"USING source s "+
+			"ON t.name = :p1 WHEN MATCHED THEN DELETE RETURNING t.*", st.String())
+	sqb.CheckParams(t, map[string]any{
+		"p1": "s.name",
+	}, st.Params())
+}
 
 //endregion
