@@ -10,7 +10,7 @@ type FromClause[T sqb.Statement[T]] struct {
 }
 
 func NewFromClause[T sqb.Statement[T]](self T) *FromClause[T] {
-	return &FromClause[T]{sql.NewFromClause[T](self)}
+	return &FromClause[T]{sql.NewFromClause(self)}
 }
 func (j *FromClause[T]) FromInfile(table any) T {
 	return j.From("INFILE", table)

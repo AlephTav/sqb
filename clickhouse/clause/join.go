@@ -10,7 +10,7 @@ type JoinClause[T sqb.Statement[T]] struct {
 }
 
 func NewJoinClause[T sqb.Statement[T]](self T) *JoinClause[T] {
-	return &JoinClause[T]{sql.NewJoinClause[T](self)}
+	return &JoinClause[T]{sql.NewJoinClause(self)}
 }
 func (j *JoinClause[T]) LeftSemiJoin(table any, args ...any) T {
 	return j.Join("LEFT SEMI JOIN", table, args...)

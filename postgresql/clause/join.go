@@ -10,7 +10,7 @@ type JoinClause[T sqb.Statement[T]] struct {
 }
 
 func NewJoinClause[T sqb.Statement[T]](self T) *JoinClause[T] {
-	return &JoinClause[T]{sql.NewJoinClause[T](self)}
+	return &JoinClause[T]{sql.NewJoinClause(self)}
 }
 
 // FullJoin adds full join on new table with alias and condition:

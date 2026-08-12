@@ -10,7 +10,7 @@ type InsertClause[T sqb.Statement[T]] struct {
 }
 
 func NewInsertClause[T sqb.Statement[T]](self T) *InsertClause[T] {
-	return &InsertClause[T]{sql.NewInsertClause[T](self)}
+	return &InsertClause[T]{sql.NewInsertClause(self)}
 }
 
 func (i *InsertClause[T]) CopyInsert(self T) *InsertClause[T] {

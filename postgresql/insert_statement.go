@@ -21,14 +21,14 @@ type InsertStmt struct {
 
 func NewInsertStmt(db sqb.StatementExecutor) *InsertStmt {
 	st := &InsertStmt{}
-	st.DataFetching = execution.NewDataFetching[*InsertStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*InsertStmt](st, db)
-	st.WithClause = cls.NewWithClause[*InsertStmt](st)
-	st.InsertClause = postgresql.NewInsertClause[*InsertStmt](st)
-	st.ColumnsClause = cls.NewColumnsClause[*InsertStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, db)
+	st.WithClause = cls.NewWithClause(st)
+	st.InsertClause = postgresql.NewInsertClause(st)
+	st.ColumnsClause = cls.NewColumnsClause(st)
 	st.ValueListClause = postgresql.NewValueListClause[*InsertStmt, *SelectStmt](st)
-	st.ConflictClause = postgresql.NewConflictClause[*InsertStmt](st)
-	st.ReturningClause = cls.NewReturningClause[*InsertStmt](st)
+	st.ConflictClause = postgresql.NewConflictClause(st)
+	st.ReturningClause = cls.NewReturningClause(st)
 	return st
 }
 

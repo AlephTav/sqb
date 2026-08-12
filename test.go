@@ -15,7 +15,7 @@ func CheckSql(t *testing.T, expected any, actual string) {
 			t.Errorf("Expected SQL is %q, actual is %q", expected, actual)
 		}
 	default:
-		if !slices.Contains[[]string, string](expected.([]string), actual) {
+		if !slices.Contains(expected.([]string), actual) {
 			t.Errorf("Expected SQL is %q, actual is %q", expected.([]string)[0], actual)
 		}
 	}
@@ -45,7 +45,7 @@ func NewStatementExecutorMock() *StatementExecutorMock {
 
 func (m *StatementExecutorMock) rows(sql string) []map[string]any {
 	limit, offset := 3, 0
-	r, _ := regexp.Compile("(LIMIT|OFFSET) (\\d+)")
+	r, _ := regexp.Compile(`(LIMIT|OFFSET) (\d+)`)
 	matches := r.FindAllStringSubmatch(sql, -1)
 	for _, match := range matches {
 		switch match[1] {
@@ -58,10 +58,7 @@ func (m *StatementExecutorMock) rows(sql string) []map[string]any {
 	if offset > 2 {
 		return []map[string]any{}
 	}
-	top := offset + limit
-	if top > 3 {
-		top = 3
-	}
+	top := min(offset+limit, 3)
 	return []map[string]any{
 		{"c1": "v1", "c2": "v2", "c3": "a"},
 		{"c1": "v3", "c2": "v4", "c3": "b"},

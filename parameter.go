@@ -13,7 +13,7 @@ func NextParameterName() string {
 }
 
 func ResetParameterIndex() {
-	for parameterIndex.Load() != 0 {	
+	for parameterIndex.Load() != 0 {
 		parameterIndex.Add(-parameterIndex.Load())
 	}
 }

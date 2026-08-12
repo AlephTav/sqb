@@ -21,14 +21,14 @@ type DeleteStmt struct {
 
 func NewDeleteStmt(db sqb.StatementExecutor) *DeleteStmt {
 	st := &DeleteStmt{}
-	st.DataFetching = execution.NewDataFetching[*DeleteStmt](st)
-	st.StatementExecution = execution.NewStatementExecution[*DeleteStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*DeleteStmt](st, db)
-	st.WithClause = cls.NewWithClause[*DeleteStmt](st)
-	st.DeleteClause = postgresql.NewDeleteClause[*DeleteStmt](st)
-	st.UsingClause = cls.NewUsingClause[*DeleteStmt](st)
-	st.WhereClause = cls.NewWhereClause[*DeleteStmt](st)
-	st.ReturningClause = cls.NewReturningClause[*DeleteStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.StatementExecution = execution.NewStatementExecution(st)
+	st.BaseStatement = sql.NewBaseStatement(st, db)
+	st.WithClause = cls.NewWithClause(st)
+	st.DeleteClause = postgresql.NewDeleteClause(st)
+	st.UsingClause = cls.NewUsingClause(st)
+	st.WhereClause = cls.NewWhereClause(st)
+	st.ReturningClause = cls.NewReturningClause(st)
 	return st
 }
 
@@ -50,9 +50,9 @@ func (s *DeleteStmt) Copy() *DeleteStmt {
 	st.UsingClause = s.CopyUsing(st)
 	st.WhereClause = s.CopyWhere(st)
 	st.ReturningClause = s.CopyReturning(st)
-	st.DataFetching = execution.NewDataFetching[*DeleteStmt](st)
-	st.StatementExecution = execution.NewStatementExecution[*DeleteStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*DeleteStmt](st, s.Executor())
+	st.DataFetching = execution.NewDataFetching(st)
+	st.StatementExecution = execution.NewStatementExecution(st)
+	st.BaseStatement = sql.NewBaseStatement(st, s.Executor())
 	return st
 }
 

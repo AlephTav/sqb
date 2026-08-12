@@ -10,7 +10,7 @@ type LockingClause[T sqb.Statement[T]] struct {
 }
 
 func NewLockingClause[T sqb.Statement[T]](self T) *LockingClause[T] {
-	return &LockingClause[T]{sql.NewLockingClause[T](self)}
+	return &LockingClause[T]{sql.NewLockingClause(self)}
 }
 
 // ForNoKeyUpdate sets the lock for no key update clause of the statement:

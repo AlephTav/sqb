@@ -11,7 +11,7 @@ type DeleteClause[T sqb.Statement[T]] struct {
 }
 
 func NewDeleteClause[T sqb.Statement[T]](self T) *DeleteClause[T] {
-	return &DeleteClause[T]{sql.NewDeleteClause[T](self), false}
+	return &DeleteClause[T]{sql.NewDeleteClause(self), false}
 }
 
 // FromOnly adds table name and its alias to the "delete from only" clause:

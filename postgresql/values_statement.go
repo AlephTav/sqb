@@ -20,13 +20,13 @@ type ValuesStmt struct {
 
 func NewValuesStmt(db sqb.StatementExecutor) *ValuesStmt {
 	st := &ValuesStmt{}
-	st.DataFetching = execution.NewDataFetching[*ValuesStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*ValuesStmt](st, db)
-	st.UnionClause = postgresql.NewUnionClause[*ValuesStmt](st)
-	st.ValuesClause = cls.NewValuesClause[*ValuesStmt](st)
-	st.OrderClause = cls.NewOrderClause[*ValuesStmt](st)
-	st.LimitClause = cls.NewLimitClause[*ValuesStmt](st)
-	st.OffsetClause = cls.NewOffsetClause[*ValuesStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, db)
+	st.UnionClause = postgresql.NewUnionClause(st)
+	st.ValuesClause = cls.NewValuesClause(st)
+	st.OrderClause = cls.NewOrderClause(st)
+	st.LimitClause = cls.NewLimitClause(st)
+	st.OffsetClause = cls.NewOffsetClause(st)
 	return st
 }
 

@@ -27,20 +27,20 @@ type SelectStmt struct {
 
 func NewSelectStmt(db sqb.StatementExecutor) *SelectStmt {
 	st := &SelectStmt{}
-	st.DataFetching = execution.NewDataFetching[*SelectStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*SelectStmt](st, db)
-	st.UnionClause = postgresql.NewUnionClause[*SelectStmt](st)
-	st.WithClause = cls.NewWithClause[*SelectStmt](st)
-	st.FromClause = cls.NewFromClause[*SelectStmt](st)
-	st.SelectClause = cls.NewSelectClause[*SelectStmt](st)
-	st.JoinClause = postgresql.NewJoinClause[*SelectStmt](st)
-	st.WhereClause = cls.NewWhereClause[*SelectStmt](st)
-	st.GroupClause = cls.NewGroupClause[*SelectStmt](st)
-	st.HavingClause = cls.NewHavingClause[*SelectStmt](st)
-	st.OrderClause = cls.NewOrderClause[*SelectStmt](st)
-	st.LimitClause = cls.NewLimitClause[*SelectStmt](st)
-	st.OffsetClause = cls.NewOffsetClause[*SelectStmt](st)
-	st.LockingClause = postgresql.NewLockingClause[*SelectStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, db)
+	st.UnionClause = postgresql.NewUnionClause(st)
+	st.WithClause = cls.NewWithClause(st)
+	st.FromClause = cls.NewFromClause(st)
+	st.SelectClause = cls.NewSelectClause(st)
+	st.JoinClause = postgresql.NewJoinClause(st)
+	st.WhereClause = cls.NewWhereClause(st)
+	st.GroupClause = cls.NewGroupClause(st)
+	st.HavingClause = cls.NewHavingClause(st)
+	st.OrderClause = cls.NewOrderClause(st)
+	st.LimitClause = cls.NewLimitClause(st)
+	st.OffsetClause = cls.NewOffsetClause(st)
+	st.LockingClause = postgresql.NewLockingClause(st)
 	return st
 }
 
@@ -66,7 +66,7 @@ func (s *SelectStmt) Column(args ...string) ([]any, error) {
 	}
 	built := s.IsBuilt()
 	prevSelect := s.SelectClause
-	s.SelectClause = cls.NewSelectClause[*SelectStmt](s)
+	s.SelectClause = cls.NewSelectClause(s)
 	s.Select(args[0])
 	result, err := s.DataFetching.Column()
 	s.SelectClause = prevSelect
@@ -90,13 +90,35 @@ func (s *SelectStmt) One(args ...string) (any, error) {
 	}
 	built := s.IsBuilt()
 	prevSelect := s.SelectClause
-	s.SelectClause = cls.NewSelectClause[*SelectStmt](s)
+	s.SelectClause = cls.NewSelectClause(s)
 	s.Select(args[0])
 	result, err := s.DataFetching.One()
 	s.SelectClause = prevSelect
 	if !built {
 		s.Dirty()
 	}
+	return result, err
+}
+
+func (s *SelectStmt) MustCountWithGrouping(column string) int64 {
+	r, err := s.CountWithGrouping(column)
+	if err != nil {
+		panic(err)
+	}
+	return r
+}
+
+func (s *SelectStmt) CountWithGrouping(column string) (int64, error) {
+	prevLimit := s.LimitClause
+	prevOffset := s.OffsetClause
+	prevOrder := s.OrderClause
+	s.LimitClause = cls.NewLimitClause(s)
+	s.OffsetClause = cls.NewOffsetClause(s)
+	s.OrderClause = cls.NewOrderClause(s)
+	result, err := s.CountWithNonConditionalClauses(column)
+	s.LimitClause = prevLimit
+	s.OffsetClause = prevOffset
+	s.OrderClause = prevOrder
 	return result, err
 }
 
@@ -113,10 +135,10 @@ func (s *SelectStmt) Count(column string) (int64, error) {
 	prevOffset := s.OffsetClause
 	prevOrder := s.OrderClause
 	prevGroup := s.GroupClause
-	s.LimitClause = cls.NewLimitClause[*SelectStmt](s)
-	s.OffsetClause = cls.NewOffsetClause[*SelectStmt](s)
-	s.OrderClause = cls.NewOrderClause[*SelectStmt](s)
-	s.GroupClause = cls.NewGroupClause[*SelectStmt](s)
+	s.LimitClause = cls.NewLimitClause(s)
+	s.OffsetClause = cls.NewOffsetClause(s)
+	s.OrderClause = cls.NewOrderClause(s)
+	s.GroupClause = cls.NewGroupClause(s)
 	result, err := s.CountWithNonConditionalClauses(column)
 	s.LimitClause = prevLimit
 	s.OffsetClause = prevOffset
@@ -215,9 +237,9 @@ func (s *SelectStmt) Copy() *SelectStmt {
 	st.LimitClause = s.CopyLimit(st)
 	st.OffsetClause = s.CopyOffset(st)
 	st.LockingClause = s.CopyLock(st)
-	st.DataFetching = execution.NewDataFetching[*SelectStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*SelectStmt](st, s.Executor())
-	st.UnionClause = postgresql.NewUnionClause[*SelectStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, s.Executor())
+	st.UnionClause = postgresql.NewUnionClause(st)
 	return st
 }
 

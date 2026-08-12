@@ -36,30 +36,29 @@ type SelectStmt struct {
 
 func NewSelectStmt(db sqb.StatementExecutor) *SelectStmt {
 	st := &SelectStmt{}
-	st.DataFetching = execution.NewDataFetching[*SelectStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*SelectStmt](st, db)
-	st.UnionClause = clickhouse.NewUnionClause[*SelectStmt](st)
-	st.WithClause = cls.NewWithClause[*SelectStmt](st)
-	st.FromClause = cls.NewFromClause[*SelectStmt](st)
-	st.SelectClause = cls.NewSelectClause[*SelectStmt](st)
-	st.JoinClause = clickhouse.NewJoinClause[*SelectStmt](st)
-	st.WhereClause = cls.NewWhereClause[*SelectStmt](st)
-	st.GroupClause = cls.NewGroupClause[*SelectStmt](st)
-	st.HavingClause = cls.NewHavingClause[*SelectStmt](st)
-	st.OrderClause = cls.NewOrderClause[*SelectStmt](st)
-	st.LimitClause = cls.NewLimitClause[*SelectStmt](st)
-	st.OffsetClause = cls.NewOffsetClause[*SelectStmt](st)
-
-	st.ApplyClause = clickhouse.NewApplyClause[*SelectStmt](st)
-	st.ExceptClause = clickhouse.NewExceptClause[*SelectStmt](st)
-	st.SettingsClause = clickhouse.NewSettingsClause[*SelectStmt](st)
-	st.PrewhereClause = clickhouse.NewPrewhereClause[*SelectStmt](st)
-	st.IntersectClause = clickhouse.NewIntersectClause[*SelectStmt](st)
-	st.SampleClause = clickhouse.NewSampleClause[*SelectStmt](st)
-	st.ReplaceClause = clickhouse.NewReplaceClause[*SelectStmt](st)
-	st.QualifyClause = clickhouse.NewQualifyClause[*SelectStmt](st)
-	st.IntoOutfileClause = clickhouse.NewIntoOutfileClause[*SelectStmt](st)
-	st.FormatClause = clickhouse.NewFormatClause[*SelectStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, db)
+	st.UnionClause = clickhouse.NewUnionClause(st)
+	st.WithClause = cls.NewWithClause(st)
+	st.FromClause = cls.NewFromClause(st)
+	st.SelectClause = cls.NewSelectClause(st)
+	st.JoinClause = clickhouse.NewJoinClause(st)
+	st.WhereClause = cls.NewWhereClause(st)
+	st.GroupClause = cls.NewGroupClause(st)
+	st.HavingClause = cls.NewHavingClause(st)
+	st.OrderClause = cls.NewOrderClause(st)
+	st.LimitClause = cls.NewLimitClause(st)
+	st.OffsetClause = cls.NewOffsetClause(st)
+	st.ApplyClause = clickhouse.NewApplyClause(st)
+	st.ExceptClause = clickhouse.NewExceptClause(st)
+	st.SettingsClause = clickhouse.NewSettingsClause(st)
+	st.PrewhereClause = clickhouse.NewPrewhereClause(st)
+	st.IntersectClause = clickhouse.NewIntersectClause(st)
+	st.SampleClause = clickhouse.NewSampleClause(st)
+	st.ReplaceClause = clickhouse.NewReplaceClause(st)
+	st.QualifyClause = clickhouse.NewQualifyClause(st)
+	st.IntoOutfileClause = clickhouse.NewIntoOutfileClause(st)
+	st.FormatClause = clickhouse.NewFormatClause(st)
 	return st
 }
 
@@ -85,7 +84,7 @@ func (s *SelectStmt) Column(args ...string) ([]any, error) {
 	}
 	built := s.IsBuilt()
 	prevSelect := s.SelectClause
-	s.SelectClause = cls.NewSelectClause[*SelectStmt](s)
+	s.SelectClause = cls.NewSelectClause(s)
 	s.Select(args[0])
 	result, err := s.DataFetching.Column()
 	s.SelectClause = prevSelect
@@ -109,7 +108,7 @@ func (s *SelectStmt) One(args ...string) (any, error) {
 	}
 	built := s.IsBuilt()
 	prevSelect := s.SelectClause
-	s.SelectClause = cls.NewSelectClause[*SelectStmt](s)
+	s.SelectClause = cls.NewSelectClause(s)
 	s.Select(args[0])
 	result, err := s.DataFetching.One()
 	s.SelectClause = prevSelect
@@ -132,10 +131,10 @@ func (s *SelectStmt) Count(column string) (int64, error) {
 	prevOffset := s.OffsetClause
 	prevOrder := s.OrderClause
 	prevGroup := s.GroupClause
-	s.LimitClause = cls.NewLimitClause[*SelectStmt](s)
-	s.OffsetClause = cls.NewOffsetClause[*SelectStmt](s)
-	s.OrderClause = cls.NewOrderClause[*SelectStmt](s)
-	s.GroupClause = cls.NewGroupClause[*SelectStmt](s)
+	s.LimitClause = cls.NewLimitClause(s)
+	s.OffsetClause = cls.NewOffsetClause(s)
+	s.OrderClause = cls.NewOrderClause(s)
+	s.GroupClause = cls.NewGroupClause(s)
 	result, err := s.CountWithNonConditionalClauses(column)
 	s.LimitClause = prevLimit
 	s.OffsetClause = prevOffset
@@ -230,12 +229,12 @@ func (s *SelectStmt) Clean() *SelectStmt {
 func (s *SelectStmt) Copy() *SelectStmt {
 	st := &SelectStmt{}
 	st.WithClause = s.CopyWith(st)
-	st.ApplyClause = clickhouse.NewApplyClause[*SelectStmt](st)
-	st.ExceptClause = clickhouse.NewExceptClause[*SelectStmt](st)
-	st.IntersectClause = clickhouse.NewIntersectClause[*SelectStmt](st)
-	st.PrewhereClause = clickhouse.NewPrewhereClause[*SelectStmt](st)
-	st.SettingsClause = clickhouse.NewSettingsClause[*SelectStmt](st)
-	st.JoinClause = clickhouse.NewJoinClause[*SelectStmt](st)
+	st.ApplyClause = clickhouse.NewApplyClause(st)
+	st.ExceptClause = clickhouse.NewExceptClause(st)
+	st.IntersectClause = clickhouse.NewIntersectClause(st)
+	st.PrewhereClause = clickhouse.NewPrewhereClause(st)
+	st.SettingsClause = clickhouse.NewSettingsClause(st)
+	st.JoinClause = clickhouse.NewJoinClause(st)
 	st.FromClause = s.CopyFrom(st)
 	st.SelectClause = s.CopySelect(st)
 
@@ -246,9 +245,9 @@ func (s *SelectStmt) Copy() *SelectStmt {
 	st.LimitClause = s.CopyLimit(st)
 	st.OffsetClause = s.CopyOffset(st)
 
-	st.DataFetching = execution.NewDataFetching[*SelectStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*SelectStmt](st, s.Executor())
-	st.UnionClause = clickhouse.NewUnionClause[*SelectStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, s.Executor())
+	st.UnionClause = clickhouse.NewUnionClause(st)
 
 	return st
 }

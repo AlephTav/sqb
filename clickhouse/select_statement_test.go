@@ -15,7 +15,7 @@ func TestSelectStmt_SelectWithColumns(t *testing.T) {
 		Select("COLUMNS('a')").
 		From("col_names")
 	sqb.CheckSql(t, "SELECT COLUMNS('a') FROM col_names", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectApply(t *testing.T) {
@@ -24,7 +24,7 @@ func TestSelectStmt_SelectApply(t *testing.T) {
 		From("columns_transformers")
 
 	sqb.CheckSql(t, "SELECT * APPLY(sum) FROM columns_transformers", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectReplace(t *testing.T) {
@@ -32,7 +32,7 @@ func TestSelectStmt_SelectReplace(t *testing.T) {
 		Replace("i + 1 AS i").
 		From("columns_transformers")
 	sqb.CheckSql(t, "SELECT * REPLACE(i + 1 AS i) FROM columns_transformers", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectApplyReplceMixed(t *testing.T) {
@@ -41,7 +41,7 @@ func TestSelectStmt_SelectApplyReplceMixed(t *testing.T) {
 		Apply("sum").
 		From("columns_transformers")
 	sqb.CheckSql(t, "SELECT * REPLACE(i + 1 AS i) APPLY(sum) FROM columns_transformers", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 func TestSelectStmt_SelectMultiplyApply(t *testing.T) {
 	st := NewSelectStmt(nil).
@@ -52,7 +52,7 @@ func TestSelectStmt_SelectMultiplyApply(t *testing.T) {
 		From("columns_transformers")
 	fmt.Println(st.String())
 	sqb.CheckSql(t, "SELECT COLUMNS('[jk]') APPLY(toString) APPLY(length) APPLY(max) FROM columns_transformers", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 /*
@@ -74,7 +74,7 @@ func TestSelectStmt_SelectALL(t *testing.T) {
 		From("columns_transformers")
 
 	sqb.CheckSql(t, "SELECT ALL FROM columns_transformers", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 // region ARRAY JOIN
@@ -165,7 +165,7 @@ func TestSelectStmt_SelectExceptWithAlias(t *testing.T) {
 		From("numbers(1,10) as n1").
 		Except(NewSelectStmt(nil).Select("number").From("numbers(3,6) as n2"))
 	sqb.CheckSql(t, "SELECT * FROM numbers(1,10) as n1 EXCEPT (SELECT number FROM numbers(3,6) as n2)", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectExceptWithMultipleColumns(t *testing.T) {
@@ -174,7 +174,7 @@ func TestSelectStmt_SelectExceptWithMultipleColumns(t *testing.T) {
 		From("numbers(1,10)").
 		Except(NewSelectStmt(nil).Select("number, name").From("numbers(3,6)"))
 	sqb.CheckSql(t, "SELECT number, name FROM numbers(1,10) EXCEPT (SELECT number, name FROM numbers(3,6))", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 //region FROM
@@ -304,7 +304,7 @@ func TestSelectStmt_SelectFinal(t *testing.T) {
 		Final().
 		Where("x > 1")
 	sqb.CheckSql(t, "SELECT x, y FROM mytable FINAL WHERE x > 1", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectSettings(t *testing.T) {
@@ -314,7 +314,7 @@ func TestSelectStmt_SelectSettings(t *testing.T) {
 		Where("x > 1").
 		Settings("final = 1")
 	sqb.CheckSql(t, "SELECT x, y FROM mytable WHERE x > 1 SETTINGS final = 1", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectFromWithGroupBy(t *testing.T) {
@@ -323,7 +323,7 @@ func TestSelectStmt_SelectFromWithGroupBy(t *testing.T) {
 		From("mytable").
 		GroupBy("x")
 	sqb.CheckSql(t, "SELECT x, COUNT(y) FROM mytable GROUP BY x", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 func TestSelectStmt_SelectFromWithOrderBy(t *testing.T) {
 	st := NewSelectStmt(nil).
@@ -331,7 +331,7 @@ func TestSelectStmt_SelectFromWithOrderBy(t *testing.T) {
 		From("mytable").
 		OrderBy("x DESC")
 	sqb.CheckSql(t, "SELECT x, y FROM mytable ORDER BY x DESC", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 // region GROUP BY
@@ -835,7 +835,7 @@ func TestSelectStmt_SelectLimit(t *testing.T) {
 		From("numbers").
 		Limit(10)
 	sqb.CheckSql(t, "SELECT * FROM numbers LIMIT 10", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_Limit(t *testing.T) {
@@ -872,7 +872,7 @@ func TestSelectStmt_SelectOffset(t *testing.T) {
 		Limit(3).
 		Offset(1)
 	sqb.CheckSql(t, "SELECT * FROM test_fetch ORDER BY a LIMIT 3 OFFSET 1", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 func TestSelectStmt_SelectWithTies(t *testing.T) {
@@ -882,7 +882,7 @@ func TestSelectStmt_SelectWithTies(t *testing.T) {
 		Limit(3).
 		WithTies()
 	sqb.CheckSql(t, "SELECT * FROM test_fetch ORDER BY a LIMIT 3 WITH TIES", st.String())
-	sqb.CheckParams(t, map[string]interface{}{}, st.Params())
+	sqb.CheckParams(t, map[string]any{}, st.Params())
 }
 
 // region ORDER BY

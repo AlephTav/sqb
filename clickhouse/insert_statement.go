@@ -23,14 +23,14 @@ type InsertStmt struct {
 
 func NewInsertStmt(db sqb.StatementExecutor) *InsertStmt {
 	st := &InsertStmt{}
-	st.DataFetching = execution.NewDataFetching[*InsertStmt](st)
-	st.BaseStatement = sql.NewBaseStatement[*InsertStmt](st, db)
-	st.InsertClause = clickhouse.NewInsertClause[*InsertStmt](st)
+	st.DataFetching = execution.NewDataFetching(st)
+	st.BaseStatement = sql.NewBaseStatement(st, db)
+	st.InsertClause = clickhouse.NewInsertClause(st)
 	st.ValueListClause = clickhouse.NewValueListClause[*InsertStmt, *SelectStmt](st)
-	st.ColumnsClause = cls.NewColumnsClause[*InsertStmt](st)
-	st.SettingsClause = clickhouse.NewSettingsClause[*InsertStmt](st)
-	st.FromClause = clickhouse.NewFromClause[*InsertStmt](st)
-	st.FormatClause = clickhouse.NewFormatClause[*InsertStmt](st)
+	st.ColumnsClause = cls.NewColumnsClause(st)
+	st.SettingsClause = clickhouse.NewSettingsClause(st)
+	st.FromClause = clickhouse.NewFromClause(st)
+	st.FormatClause = clickhouse.NewFormatClause(st)
 
 	return st
 }

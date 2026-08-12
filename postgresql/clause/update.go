@@ -11,7 +11,7 @@ type UpdateClause[T sqb.Statement[T]] struct {
 }
 
 func NewUpdateClause[T sqb.Statement[T]](self T) *UpdateClause[T] {
-	return &UpdateClause[T]{sql.NewUpdateClause[T](self), false}
+	return &UpdateClause[T]{sql.NewUpdateClause(self), false}
 }
 
 // OnlyTable adds table name and its alias to the "update only" clause:
