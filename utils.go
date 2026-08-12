@@ -21,7 +21,7 @@ func ToSliceMapSlice[K comparable, V any](values []map[K]V) []any {
 	if len(lst) == 0 {
 		return lst
 	}
-	keys := MapKeys[K, V](values[0])
+	keys := MapKeys(values[0])
 	for i, mp := range values {
 		j := 0
 		sm := make([]any, 2*len(mp))
@@ -75,28 +75,28 @@ func MapValues[K comparable, V any](m map[K]V) []V {
 	return values
 }
 
-func ToInt64(v any) (int64, error) {
-	switch v.(type) {
+func ToInt64(value any) (int64, error) {
+	switch v := value.(type) {
 	case uint8:
-		return int64(v.(uint8)), nil
+		return int64(v), nil
 	case int8:
-		return int64(v.(int8)), nil
+		return int64(v), nil
 	case uint16:
-		return int64(v.(uint16)), nil
+		return int64(v), nil
 	case int16:
-		return int64(v.(int16)), nil
+		return int64(v), nil
 	case uint:
-		return int64(v.(uint)), nil
+		return int64(v), nil
 	case int:
-		return int64(v.(int)), nil
+		return int64(v), nil
 	case uint64:
-		return int64(v.(uint64)), nil
+		return int64(v), nil
 	case int64:
-		return v.(int64), nil
+		return v, nil
 	case float32:
-		return int64(v.(float32)), nil
+		return int64(v), nil
 	case float64:
-		return int64(v.(float64)), nil
+		return int64(v), nil
 	default:
 		return 0, fmt.Errorf("value of type %T cannot be converted to int64", v)
 	}
